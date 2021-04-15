@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import os
 import h5py
-from sklearn import linear_model
 from scipy import stats
 from settings import *
 
