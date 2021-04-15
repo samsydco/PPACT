@@ -20,8 +20,11 @@ subs = glob.glob(parpath+'*.h5')
 subpairs = list(permutations(subs,2))
 ROIs = list(dd.io.load(subs[0]).keys())[1:]
 
-for r in tqdm.tqdm(ROIs):
-	
+for roi in tqdm.tqdm(ROIs):
+	for pair in subpairs:
+		v1 = dd.io.load(pair[0],'/'+roi)
+		v2 = dd.io.load(pair[1],'/'+roi)
+		
 	
 
 
