@@ -27,9 +27,10 @@ for movie in movies:
 		ticks.append(v+np.sum(groupcnt[:i])) if i>0 else ticks.append(v)
 	[v for v in Phenocopy.groupby('GROUP').count()['Group']]
 	ticklabels = ['C', 'DA', 'DC', 'IFC', 'PI']
-	for roi in tqdm.tqdm(ROIs):
+	for roi in ROIs:
+		roi_short = roi.split('/')[-1][:-3]
 		roidict = dd.io.load(roi)
-		fig,ax = plt.subplots(1,3,figsize=(25,8))
+		fig,ax = plt.subplots(1,3,figsize=(30,10))
 		for i,comp in enumerate(roidict.keys()):
 			compmat = np.zeros((len(subvec),len(subvec)))
 			for pair in roidict[comp].keys():
@@ -43,45 +44,13 @@ for movie in movies:
 			ax[i].set_xticks(ticks)
 			ax[i].set_xticklabels(ticklabels)
 			ax[i].set_title(comp)
+		plt.suptitle(roi_short,y=0.9)
 		plt.tight_layout()
-		fig.savefig(figdir+'ISC/'+movie[:4]+'_'+roi.split('/')[-1][:-3]+'.png')
+		fig.savefig(figdir+'ISC/'+movie[:4]+'_'+roi_short+'.png')
+		fig.close()
 			
-			
-			
-			h=ax.imshow(compmat)
-			fig.colorbar(h,ax=ax,fraction=0.046, pad=0.04)
-			plt.tight_layout()
+
 					
-					
-
-
-
-from itertools import permutations
-subpairs = list(permutations(Phenodf['IDENT_SUBID'],2))
-Pairdf = pd.DataFrame(columns=['pair','MOVIE','ECA','Agemean','Agediff'])
-for pair in tqdm.tqdm(subpairs):
-	movie = Phenodf[Phenodf['IDENT_SUBID'] == pair[0]]['MOVIE'].iloc[0]
-	if movie == Phenodf[Phenodf['IDENT_SUBID'] == pair[1]]['MOVIE'].iloc[0]:
-		Pairdf = Pairdf.append({'pair': ' '.join(pair),
-					  'MOVIE': movie,
-					  'ECA': Phenodf[Phenodf['IDENT_SUBID'] == pair[0]]['GROUP'].iloc[0] + ' ' + Phenodf[Phenodf['IDENT_SUBID'] == pair[1]]['GROUP'].iloc[0],
-					  'Agemean': Phenodf.loc[Phenodf['IDENT_SUBID'].isin(pair)]['age_truncated'].mean(),
-					  'Agediff': abs(Phenodf.loc[Phenodf['IDENT_SUBID'].isin(pair)]['age_truncated'].diff().iloc[1])},ignore_index = True)
-Pairdf = Pairdf.replace({'PI C':'C PI','DC PI':'PI DC','DA C':'C DA','DA PI':'PI DA','IFC DC':'DC IFC','IFC C':'C IFC','DC C':'C DC','IFC PI':'PI IFC','IFC DA':'DA IFC','DC DA':'DA DC'})
-
-
-ROIs = glob.glob(ISCdir+'*')
-
-for roi in ROIs:
-	roidict = dd.io.load(roi)
-	Pairdfcopy = Pairdf.copy()
-	for comp in tqdm.tqdm(roidict.keys()):
-		Pairdfcopy[comp] = np.nan
-		for pair in roidict[comp].keys():
-			pairtmp = pair.replace(".h5","_V2").replace('sub-','')
-			Pairdfcopy.loc[Pairdfcopy['pair']==pairtmp,comp] = roidict[comp][pair]
-		for m in movies:
-			pivot = Pairdfcopy[Pairdfcopy['MOVIE']==m].pivot_table(values=comp,index=['ECA','Agemean'])
 			
 
 
