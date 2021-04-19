@@ -10,6 +10,7 @@ fmripreppath = outputdr+'fmriprep/'
 prepath = path+'Preprocessed/'
 parpath = path+'Parcellations/'
 phenopath = path + 'pheno_data/'
+ISCdir = path +'ISC/'
 figdir = path+ 'Figures/'
 
 bad_sub_dict = {}
