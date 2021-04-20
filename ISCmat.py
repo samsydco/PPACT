@@ -47,7 +47,7 @@ for movie in movies:
 		plt.suptitle(roi_short,y=0.9)
 		plt.tight_layout()
 		fig.savefig(figdir+'ISC/'+movie[:4]+'_'+roi_short+'.png')
-		fig.close()
+		plt.close()
 			
 
 					
