@@ -16,7 +16,6 @@ from settings import *
 movies = ['Homeward Bound', 'Shirley']
 ROIs = glob.glob(ISCdir+'*')
 ticklabels = ['C', 'DA', 'DC', 'IFC', 'PI']
-badsubjs = [['PA231_V2', 'PA092_V2', 'PA164_V2', 'PA077_V2', 'PA155_V2', 'PA074_V2'],['PA042_V2', 'PA017_V2', 'PA085_V2']]
 comps = ['C','DA','PI','ECA']
 compb = list(combinations_with_replacement(comps,2))
 compb = [p for p in compb if p not in (('PI', 'ECA'),('DA', 'ECA'))]
