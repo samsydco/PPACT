@@ -12,7 +12,7 @@ from settings import *
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '') for s in subs]
 subs = [s.replace(fmripreppath, '') for s in subs]
-subs = [sub for sub in subs if not os.path.isfile(prepath + sub + '.h5') and sub not in bad_sub_dict]
+subs = [sub for sub in subs if not os.path.isfile(prepath + sub + '.h5')]
 
 Phenodf = pd.read_csv(phenopath+'schema_inventory.csv')
 
