@@ -6,14 +6,33 @@ import nibabel as nib
 import numpy as np
 import os
 import h5py
+from pathlib import Path
 from sklearn import linear_model
 from scipy import stats, special
+from nipype.interfaces.ants import ApplyTransforms
 from settings import *
 
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '').replace(fmripreppath, '') for s in subs]
-subs = [sub for sub in subs if sub not in bad_sub_dict]
-subs = [sub for sub in subs if not os.path.isfile(hpcprepath + sub + '.h5') and sub not in bad_sub_dict]
+subs = [sub for sub in subs if not os.path.isfile(subprepath + sub + '.h5')]
+
+
+xfm = '_ses-V2W2_acq-MPR_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5'
+mask = '_ses-V2W2_acq-MPR_desc-aseg_dseg.nii.gz'
+ref = '_ses-V2W2_acq-MPR_space-MNI152NLin2009cAsym_desc-preproc_T1w.nii.gz'
+output = 'mask_space-MNI152NLin2009cAsym.nii.gz'
+dpath = '_ses-V2W2_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
+
+sub=subs[0]
+
+at = ApplyTransforms()
+at.inputs.input_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+mask
+at.inputs.reference_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+ref
+at.inputs.output_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+output
+at.inputs.transforms = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+xfm
+at.inputs.interpolation = 'NearestNeighbor'
+at.cmdline
+
 
 mask_path = '_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
 # Version 1.1.4:
