@@ -48,7 +48,7 @@ for roi in tqdm.tqdm(ROIs):
 					i+=pearsonr(v1[v,:],v2[v,:])[0]
 				roidict['allvISC'][event][pairstr] = i/len(goodvox)
 				roidict['meanISC'][event][pairstr] = pearsonr(np.nanmean(e1,0),np.nanmean(e2,0))[0]
-	dd.io.save(ISCdir+roi+'.h5',roidict)
+	dd.io.save(ISCdir+'ISCpat/'+roi+'.h5',roidict)
 				
 			
 		
