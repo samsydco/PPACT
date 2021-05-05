@@ -14,8 +14,7 @@ from itertools import combinations_with_replacement,combinations
 from settings import *
 
 movies = ['Homeward Bound', 'Shirley']
-ROIs = glob.glob(ISCdir+'*')
-ticklabels = ['C', 'DA', 'DC', 'IFC', 'PI']
+ROIs = glob.glob(ISCdir+'ISCall/'+'*')
 comps = ['C','DA','PI','ECA']
 compb = list(combinations_with_replacement(comps,2))
 compb = [p for p in compb if p not in (('PI', 'ECA'),('DA', 'ECA'))]
@@ -27,10 +26,6 @@ for mi,movie in enumerate(movies):
 	Phenocopy = Phenodf[Phenodf['MOVIE']==movie]
 	Phenocopy = Phenocopy[~Phenocopy['IDENT_SUBID'].isin(badsubjs[mi])]
 	subvec = list(Phenocopy['IDENT_SUBID'])
-	groupcnt = Phenocopy.groupby('GROUP').count()['Group']
-	ticks = [0]
-	for i,v in enumerate(groupcnt[:-1]):
-		ticks.append(v+np.sum(groupcnt[:i])) if i>0 else ticks.append(v)
 	for roi in tqdm.tqdm(ROIs):
 		roi_short = roi.split('/')[-1][:-3]
 		roidict = dd.io.load(roi)
