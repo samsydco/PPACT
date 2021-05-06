@@ -1,59 +1,33 @@
 #!/usr/bin/env python3
 
+import os
 import tqdm
 import glob
 import nibabel as nib
 import numpy as np
-import os
-import h5py
-from pathlib import Path
+import deepdish as dd
 from sklearn import linear_model
-from scipy import stats, special
-from nipype.interfaces.ants import ApplyTransforms
+from scipy import stats
 from settings import *
 
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '').replace(fmripreppath, '') for s in subs]
 subs = [sub for sub in subs if not os.path.isfile(subprepath + sub + '.h5')]
 
-
-xfm = '_ses-V2W2_acq-MPR_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5'
-mask = '_ses-V2W2_acq-MPR_desc-aseg_dseg.nii.gz'
-ref = '_ses-V2W2_acq-MPR_space-MNI152NLin2009cAsym_desc-preproc_T1w.nii.gz'
-output = 'mask_space-MNI152NLin2009cAsym.nii.gz'
+mask_path = '_ses-V2W2_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
 dpath = '_ses-V2W2_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
-
-sub=subs[0]
-
-at = ApplyTransforms()
-at.inputs.input_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+mask
-at.inputs.reference_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+ref
-at.inputs.output_image = fmripreppath+sub+'/ses-V2W2'+'/anat/'+output
-at.inputs.transforms = fmripreppath+sub+'/ses-V2W2'+'/anat/'+sub+xfm
-at.inputs.interpolation = 'NearestNeighbor'
-at.cmdline
-
-
-mask_path = '_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
-# Version 1.1.4:
-dpath = '_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'
-conf_path = '_bold_confounds.tsv'
-
-psplit = 45 # voxels less then 45 are in post HPC (-21mm and less in MNI)
-asplit = 46 # voxels greater then 45 are in anterior HPC (-20mm and greater in MNI)
-# a/p split based on: http://www.dpmlab.org/papers/ENEURO.0178-16.2016.full.pdf
-# This is helpful: http://blog.chrisgorgolewski.org/2014/12/how-to-convert-between-voxel-and-mm.html
+conf_path = '_ses-V2W2_task-MOVIE_run-1_desc-confounds_timeseries.tsv'
+ROIs = {'L_HPC':17,'R_HPC':53,'L_AMG':18,'R_AMG':54} # From: https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
 
 for sub in tqdm.tqdm(subs):
-	for task in ['DM']:
-		fpath = fmripreppath+sub+'/func/'+sub+'_task-movie'+task
-		nii = nib.load(fpath+dpath).get_data()
-		mask = nib.load(outputdrHPC+sub+'/func/'+sub+'_task-movie'+task+mask_path)
-		mask = mask.get_data()
-		mask = np.logical_or(mask == 17, mask == 53)
-		apmask = np.concatenate([np.full(mask[:,:psplit,:].shape,1), np.zeros((mask.shape[0],1,mask.shape[0]),dtype=bool), np.full(mask[:,asplit:,:].shape,2)],axis=1)
-		hipp = nii[mask]
-		aplab = apmask[mask] #1=posterior, #2=anterior
+	fpath = fmripreppath+sub+'/ses-V2W2/func/'+sub
+	nii = nib.load(fpath+dpath).get_fdata()
+	mask = nib.load(fpath+mask_path)
+	mask = mask.get_fdata()
+	roidict = {}
+	for roi,idx in ROIs.items():
+		mask_ = mask == idx
+		roi_ = nii[mask_]
 
 		# Use regressors for:
 		# -CSF
@@ -64,26 +38,22 @@ for sub in tqdm.tqdm(subs):
 		# -RotX, RotY, RotZ and derivatives
 		
 		conf = np.genfromtxt(fpath+conf_path, names=True)
-		motion = np.column_stack((conf['X'],
-								  conf['Y'],
-								  conf['Z'],
-								  conf['RotX'],
-								  conf['RotY'],
-								  conf['RotZ']))
-		reg = np.column_stack((conf['CSF'],
-							   conf['WhiteMatter'],
-			  np.nan_to_num(conf['FramewiseDisplacement']),
-              np.column_stack([conf[k] for k in conf.dtype.names if 'Cosine' in k]),
-                           motion,
-                           np.vstack((np.zeros((1,motion.shape[1])), 
-									  np.diff(motion, axis=0)))))
+		motion = np.column_stack((conf['trans_x'],
+								  conf['trans_y'],
+								  conf['trans_z'],
+								  conf['rot_x'],
+								  conf['rot_y'],
+								  conf['rot_z']))
+		reg = np.column_stack((conf['csf'],
+							   conf['white_matter'],
+			  np.nan_to_num(conf['framewise_displacement']),
+			  np.column_stack([conf[k] for k in conf.dtype.names if 'cosine' in k]),
+							   motion,
+							   np.vstack((np.zeros((1,motion.shape[1])), 
+										  np.diff(motion, axis=0)))))
 
 		regr = linear_model.LinearRegression()
-		regr.fit(reg, hipp.T)
-		hipp = hipp - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
-		hipp = stats.zscore(hipp, axis=1)
-		with h5py.File(os.path.join(hpcprepath + sub + '.h5')) as hf:
-			grp = hf.create_group(task)
-			grp.create_dataset('HPC', data=hipp)
-			grp.create_dataset('aplab', data=aplab)
-			grp.create_dataset('reg',data=reg)
+		regr.fit(reg, roi_.T)
+		roi_ = roi_ - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
+		roidict[roi] = stats.zscore(roi_, axis=1)
+	dd.io.save(subprepath + sub + '.h5',roidict)
