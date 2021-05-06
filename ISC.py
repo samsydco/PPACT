@@ -24,7 +24,7 @@ subpairs = list(permutations(subs,2))
 ROIs = list(dd.io.load(subs[0]).keys())[1:]
 
 for roi in tqdm.tqdm(ROIs):
-	if not any([roi in r for r in glob.glob(ISCdir+'*')]):
+	if not any([roi in r for r in glob.glob(ISCdir+'ISCall/'+'*')]):
 		roidict = {'allvISC':{},'meanISC':{},'patternISC':{}}
 		for pair in subpairs:
 			pairs1 = pair[0].split('/')[-1]
