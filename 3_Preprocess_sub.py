@@ -22,7 +22,7 @@ ROIs = {'L_HPC':17,'R_HPC':53,'L_AMG':18,'R_AMG':54} # From: https://surfer.nmr.
 for sub in tqdm.tqdm(subs):
 	fpath = fmripreppath+sub+'/ses-V2W2/func/'+sub
 	nii = nib.load(fpath+dpath).get_fdata() if sub!='sub-PA003' else nib.load(fpath+dpath[:20]+'_acq-2'+dpath[20:]).get_fdata()
-	mask = nib.load(fpath+mask_path) if sub!='sub-PA003' else nib.load(fpath+mask_path[:20]+'_acq-2'+mask_path[20:]).get_fdata()
+	mask = nib.load(fpath+mask_path) if sub!='sub-PA003' else nib.load(fpath+mask_path[:20]+'_acq-2'+mask_path[20:])
 	mask = mask.get_fdata()
 	roidict = {}
 	for roi,idx in ROIs.items():
