@@ -10,10 +10,8 @@ import deepdish as dd
 import nibabel.freesurfer.io as free
 from settings import *
 
-Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
-Phenodf = Phenodf[Phenodf['FDmean'].notna()].reset_index().drop(['level_0','index'],axis=1)
-
 for sub in tqdm.tqdm(glob.glob(prepath+'*.h5')):
+	sub_short = sub.split('/')[-1]
 	roidict = {}
 	for hemi in glob.glob(path+'annot/*'):
 		lab = free.read_annot(hemi)
@@ -23,8 +21,8 @@ for sub in tqdm.tqdm(glob.glob(prepath+'*.h5')):
 			vall = np.where(lab[0]==ri)[0]
 			hemi = (hemi.split('/')[-1][0]).upper()
 			roidict[roi_short] = dd.io.load(sub,'/'+hemi,sel=dd.aslice[vall,:])
-	dd.io.save(parpath+sub.split('/')[-1],roidict)
-		
-
-
+	subrois = dd.io.load(subprepath+sub_short)
+	for roi in subrois.keys():
+		roidict[roi] = subrois[roi]
+	dd.io.save(parpath+sub_short,roidict)
 
