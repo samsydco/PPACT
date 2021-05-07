@@ -13,7 +13,6 @@ import numpy as np
 from itertools import combinations_with_replacement,combinations
 from settings import *
 
-movies = ['Homeward Bound', 'Shirley']
 ROIs = glob.glob(ISCdir+'ISCall/'+'*')
 comps = ['C','DA','PI','ECA']
 compb = list(combinations_with_replacement(comps,2))
