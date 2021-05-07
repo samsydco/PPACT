@@ -15,8 +15,7 @@ from itertools import permutations
 from settings import *
 
 TR = 0.8 # seconds
-movies = ['Homeward Bound', 'Shirley']
-Events = [[0,25, 138,225],[0,56,125,225]]
+Events = [[0,25, 138,180],[0,56,125,180]]
 
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf[Phenodf['FDmean'].notna()].reset_index().drop(['level_0','index'],axis=1)
@@ -25,7 +24,7 @@ subs = glob.glob(parpath+'*.h5')
 subpairs = list(permutations(subs,2))
 ROIs = list(dd.io.load(subs[0]).keys())[1:]
 
-for roi in tqdm.tqdm(ROIs):
+for roi in tqdm.tqdm([r for r in ROIs if len(r)!=5]):#tqdm.tqdm(ROIs):
 	roidict = {k:{k:{} for k in range(3)} for k in ['allvISC','meanISC','patternISC']}
 	for pair in subpairs:
 		pairs1 = pair[0].split('/')[-1]
@@ -37,10 +36,11 @@ for roi in tqdm.tqdm(ROIs):
 		v2 = dd.io.load(pair[1],'/'+roi)
 		goodvox = np.arange(len(v1))
 		goodvox = np.delete(goodvox, np.unique( np.concatenate( (np.where( np.isnan( np.mean(v1,1)))[0], np.where(np.isnan(np.mean(v2,1)))[0]))))
-		badvox = np.unique
 		for event in range(3):
-			e1 = v1[goodvox,Events[mov1][event]:Events[mov1][event+1]]
-			e2 = v2[goodvox,Events[mov2][event]:Events[mov2][event+1]]
+			e1 = v1[goodvox,np.round(Events[mov1][event]/TR):\
+							np.round(Events[mov1][event+1]/TR)]
+			e2 = v2[goodvox,np.round(Events[mov2][event]/TR):\
+							np.round(Events[mov2][event+1]/TR)]
 			roidict['patternISC'][event][pairstr] = pearsonr(np.mean(e1,1),np.mean(e2,1))[0]
 			if mov1 == mov2:
 				i=0
