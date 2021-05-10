@@ -37,10 +37,10 @@ for roi in tqdm.tqdm([r for r in ROIs if len(r)!=5]):#tqdm.tqdm(ROIs):
 		goodvox = np.arange(len(v1))
 		goodvox = np.delete(goodvox, np.unique( np.concatenate( (np.where( np.isnan( np.mean(v1,1)))[0], np.where(np.isnan(np.mean(v2,1)))[0]))))
 		for event in range(3):
-			e1 = v1[goodvox,np.round(Events[mov1][event]/TR):\
-							np.round(Events[mov1][event+1]/TR)]
-			e2 = v2[goodvox,np.round(Events[mov2][event]/TR):\
-							np.round(Events[mov2][event+1]/TR)]
+			e1 = v1[goodvox,int(np.round(Events[mov1][event]/TR)):\
+							int(np.round(Events[mov1][event+1]/TR))]
+			e2 = v2[goodvox,int(np.round(Events[mov2][event]/TR)):\
+							int(np.round(Events[mov2][event+1]/TR))]
 			roidict['patternISC'][event][pairstr] = pearsonr(np.mean(e1,1),np.mean(e2,1))[0]
 			if mov1 == mov2:
 				i=0
