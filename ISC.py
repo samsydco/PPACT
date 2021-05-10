@@ -31,8 +31,11 @@ for roi in tqdm.tqdm(ROIs):
 			pairs2 = pair[1].split('/')[-1]
 			if Phenodf[Phenodf['IDENT_SUBID'] == pairs2[4:9] + '_V2']['MOVIE'].iloc[0] == Phenodf[Phenodf['IDENT_SUBID'] == pairs1[4:9] + '_V2']['MOVIE'].iloc[0]:
 				pairstr = pairs1+' '+pairs2
-				v1 = dd.io.load(pair[0],'/'+roi)
-				v2 = dd.io.load(pair[1],'/'+roi)
+				try:
+					v1 = dd.io.load(pair[0],'/'+roi)
+					v2 = dd.io.load(pair[1],'/'+roi)
+				except:
+					continue
 				nvox = nvoxreal = v1.shape[0]
 				goodvox=np.arange(nvox)
 				badvox = []
