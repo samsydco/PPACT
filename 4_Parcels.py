@@ -21,8 +21,10 @@ for sub in tqdm.tqdm(glob.glob(prepath+'*.h5')):
 			vall = np.where(lab[0]==ri)[0]
 			hemi = (hemi.split('/')[-1][0]).upper()
 			roidict[roi_short] = dd.io.load(sub,'/'+hemi,sel=dd.aslice[vall,:])
-	subrois = dd.io.load(subprepath+sub_short)
-	for roi in subrois.keys():
-		roidict[roi] = subrois[roi]
+	if os.path.exists(subprepath+sub_short):
+		subrois = dd.io.load(subprepath+sub_short)
+		for roi in subrois.keys():
+			roidict[roi] = subrois[roi]
 	dd.io.save(parpath+sub_short,roidict)
+	
 
