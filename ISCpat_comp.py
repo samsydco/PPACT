@@ -25,7 +25,7 @@ Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 Phenodf = Phenodf[~Phenodf['IDENT_SUBID'].isin(badsubjs[0]+badsubjs[1])]
 subvec = list(Phenodf['IDENT_SUBID'])
 savedict = {k:{k:{k:{k:{} for k in [0,1,2]} for k in ['allvISC', 'meanISC', 'patternISC']} for k in [roi.split('/')[-1][:-3] for roi in ROIs]} for k in moviecomp}
-for mi,movpair in enumerate(moviecomp):
+for movpair in moviecomp:
 	for roi in tqdm.tqdm(ROIs):
 		roi_short = roi.split('/')[-1][:-3]
 		roidict = dd.io.load(roi)
