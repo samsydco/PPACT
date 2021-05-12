@@ -24,7 +24,7 @@ subs = glob.glob(parpath+'*.h5')
 subpairs = list(permutations(subs,2))
 ROIs = list(dd.io.load(subs[0]).keys())[1:]
 
-for roi in tqdm.tqdm([r for r in ROIs if len(r)!=5]):#tqdm.tqdm(ROIs):
+for roi in tqdm.tqdm(ROIs):
 	roidict = {k:{k:{} for k in range(3)} for k in ['allvISC','meanISC','patternISC']}
 	for pair in subpairs:
 		pairs1 = pair[0].split('/')[-1]
@@ -32,8 +32,11 @@ for roi in tqdm.tqdm([r for r in ROIs if len(r)!=5]):#tqdm.tqdm(ROIs):
 		mov1 = movies.index(Phenodf[Phenodf['IDENT_SUBID'] == pairs2[4:9] + '_V2']['MOVIE'].iloc[0])
 		mov2 = movies.index(Phenodf[Phenodf['IDENT_SUBID'] == pairs1[4:9] + '_V2']['MOVIE'].iloc[0])
 		pairstr = pairs1+' '+pairs2
-		v1 = dd.io.load(pair[0],'/'+roi)
-		v2 = dd.io.load(pair[1],'/'+roi)
+		try:
+			v1 = dd.io.load(pair[0],'/'+roi)
+			v2 = dd.io.load(pair[1],'/'+roi)
+		except:
+			continue
 		goodvox = np.arange(len(v1))
 		goodvox = np.delete(goodvox, np.unique( np.concatenate( (np.where( np.isnan( np.mean(v1,1)))[0], np.where(np.isnan(np.mean(v2,1)))[0]))))
 		for event in range(3):
