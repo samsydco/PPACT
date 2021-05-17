@@ -21,7 +21,6 @@ compb = [p for p in compb if p not in (('PI', 'ECA'),('DA', 'ECA'))]
 
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
-savedict = {k:{k:{k:{} for k in ['allvISC', 'meanISC', 'patternISC']} for k in [roi.split('/')[-1][:-3] for roi in ROIs]} for k in movies}
 for mi,movie in enumerate(movies):
 	for shuffle in tqdm.tqdm(range(nshuffle)):
 		Phenocopy = Phenodf[Phenodf['MOVIE']==movie]
