@@ -6,7 +6,7 @@
 # Use: ISCdir+'ISCw_ISCb.h5'
 
 
-
+import glob
 import pandas as pd
 import deepdish as dd
 import numpy as np
@@ -15,27 +15,37 @@ import matplotlib.pyplot as plt
 from settings import *
 plt.rcParams.update({'font.size': 15})
 
-ISCbg = dd.io.load(ISCdir+'ISCw_ISCb.h5')
-ROIs = [r for r in ISCbg[movies[0]].keys() if len(r)==5]
-figdir_ = figdir+'subcort_ISC/'
 
-for roi in ROIs:
-	for isc in ['ISCe','ISCb']:
-		fig, ax = plt.subplots()
+savedir = ISCdir+'ISCw_ISCb/'
+ROIfs = [f for f in glob.glob(savedir+'*') if any(l in f for l in ['HPC','AMG'])]
+figdir_ = figdir+'subcort_ISC/'
+		
+for r in ROIfs:
+	roif = dd.io.load(r,'/meanISC')
+	movie = r.split('/')[-1].split('_')[0]
+	roi = '_'.join(r.split('/')[-1].split('_')[1:])[:-3]
+	for isc in ['ISCb','ISCe']:
+		xticks = []; ISCs = []; violins = [];
+		for comp in roif[isc].keys():
+			xticks.append(comp[0]+' vs '+comp[1] if isc == 'ISCb' else comp[0][0]+' vs '+comp[1][0])
+			ISCs.append(roif[isc][comp][0])
+			v = roif[isc][comp][1:]
+			violins.append(v[~np.isnan(v)])
+		if isc == 'ISCe': xticks=xticks[:4]; ISCs=ISCs[:4]; violins=violins[:4]
+		plt.rcParams.update({'font.size': 15})
+		fig,ax = plt.subplots()
 		y = 0 if isc=='ISCe' else 1
 		ax.axhline(y=y, color='gray', linestyle='--',linewidth=2)
-		for movie in movies:
-			xticks = []; ISCs = [];
-			for comp in ISCbg[movie][roi]['meanISC'][isc].keys():
-				xticks.append(comp[0]+' vs '+comp[1] if isc == 'ISCb' else comp[0][0]+' vs '+comp[1][0])
-				ISCs.append(ISCbg[movie][roi]['meanISC'][isc][comp])
-				if isc == 'ISCe': xticks=xticks[:4]; ISCs=ISCs[:4]
-			ax.scatter(xticks, ISCs,label=movie)
-			ax.set_ylabel(isc)
-			ax.set_title(roi)
-		ax.legend()
-		fig.savefig(figdir_+roi+'_'+isc+'.png')
-				
+		parts = ax.violinplot(violins, np.arange(len(ISCs)), showmeans=False, showmedians=False, showextrema=False)
+		ax.scatter(xticks, ISCs,color='k',s=80)
+		ax.set_ylabel(isc)
+		ax.set_title(roi+' '+movie)
+		ax.set_ylim([-0.04,0.04]) if isc == 'ISCe' else ax.set_ylim([0,2])
+		for pc in parts['bodies']:
+			pc.set_facecolor('k')
+		fig.savefig(figdir_+'_'.join([movie,roi,isc])+'.png')
+
+
 ISCpat = dd.io.load(ISCdir+'ISCpatw_ISCpatb.h5')
 movpairs = list(ISCpat.keys())
 for roi in ROIs:
