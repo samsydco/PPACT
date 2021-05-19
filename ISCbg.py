@@ -22,11 +22,12 @@ compb = [p for p in compb if p not in (('PI', 'ECA'),('DA', 'ECA'))]
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 for mi,movie in enumerate(movies):
-	for shuffle in tqdm.tqdm(range(nshuffle)):
+	for shuffle in tqdm.tqdm(range(nshuffle+1)):
 		Phenocopy = Phenodf[Phenodf['MOVIE']==movie]
 		Phenocopy = Phenocopy[~Phenocopy['IDENT_SUBID'].isin(badsubjs[mi])]
 		subvec = list(Phenocopy['IDENT_SUBID'])
 		if shuffle !=0:
+			np.random.seed(shuffle)
 			idx = np.random.permutation(len(subvec))
 			Phenocopy['GROUP'] = [Phenocopy['GROUP'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['GROUP'])]
 			Phenocopy['Group'] = [Phenocopy['Group'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['Group'])]
