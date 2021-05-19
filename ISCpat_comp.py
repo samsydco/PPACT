@@ -26,9 +26,10 @@ Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 Phenodf = Phenodf[~Phenodf['IDENT_SUBID'].isin(badsubjs[0]+badsubjs[1])]
 subvec = list(Phenodf['IDENT_SUBID'])
 for movpair in moviecomp:
-	for shuffle in tqdm.tqdm(range(nshuffle)):
+	for shuffle in tqdm.tqdm(range(nshuffle+1)):
 		Phenocopy = Phenodf
 		if shuffle !=0:
+			np.random.seed(shuffle)
 			idx = np.random.permutation(len(subvec))
 			Phenocopy['GROUP'] = [Phenocopy['GROUP'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['GROUP'])]
 			Phenocopy['Group'] = [Phenocopy['Group'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['Group'])]
@@ -37,6 +38,7 @@ for movpair in moviecomp:
 			roi_short = roi.split('/')[-1][:-3]
 			roidict = dd.io.load(roi)
 			savefile = savedir+'_'.join([movpair[0],movpair[1],roi_short])+'.h5'
+			savefile = savefile.replace(' ','_')
 			savedict = dd.io.load(savefile) if os.path.exists(savefile) else {k:{k:{} for k in [0,1,2]} for k in ['allvISC', 'meanISC', 'patternISC']}
 			isccomps = list(roidict.keys()) if movpair[0]==movpair[1] else ['patternISC']
 			for comp in isccomps:
@@ -46,9 +48,9 @@ for movpair in moviecomp:
 						ISCe = {k:np.zeros(nshuffle) for k in list(combinations([c for c in compb if c[0]==c[1]],2))}
 						ISCb = {k:np.zeros(nshuffle) for k in [c for c in compb if c[0]!=c[1]]}
 					else:
-						ISCs = savedict[comp]['ISCs']
-						ISCe = savedict[comp]['ISCe']
-						ISCb = savedict[comp]['ISCb']
+						ISCs = savedict[comp][event]['ISCs']
+						ISCe = savedict[comp][event]['ISCe']
+						ISCb = savedict[comp][event]['ISCb']
 					ISCs_tmp = {k:[] for k in compb}
 					for pair in roidict[comp][event].keys():
 						if pair[4:9] + '_V2' in subvec and pair[17:22] + '_V2' in subvec:
