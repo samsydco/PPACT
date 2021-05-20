@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 from settings import *
 plt.rcParams.update({'font.size': 15})
 
-
 savedir = ISCdir+'ISCw_ISCb/'
 ROIfs = [f for f in glob.glob(savedir+'*') if any(l in f for l in ['HPC','AMG'])]
 figdir_ = figdir+'subcort_ISC/'
@@ -43,7 +42,7 @@ for r in ROIfs:
 		ax.set_ylim([-0.04,0.04]) if isc == 'ISCe' else ax.set_ylim([0,2])
 		for pc in parts['bodies']:
 			pc.set_facecolor('k')
-		fig.savefig(figdir_+'_'.join([movie,roi,isc])+'.png')
+		fig.savefig(figdir_+'_'.join([movie,roi,isc])+'.png', bbox_inches="tight")
 
 
 ISCpat = dd.io.load(ISCdir+'ISCpatw_ISCpatb.h5')
