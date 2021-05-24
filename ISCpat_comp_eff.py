@@ -76,7 +76,7 @@ for movpair in moviecomp:
 						ISCb[i] = ISCs[i]/(np.sqrt(ISCs[(i[0], i[0])])*np.sqrt(ISCs[(i[1], i[1])]))
 					savedict[comp][event]['ISCs'] = ISCs
 					savedict[comp][event]['ISCe'] = ISCe
-					savedict[comp][event]['ISCb'] = ISCb	
+					savedict[comp][event]['ISCb'] = ISCb
 			savefile = savedir+'_'.join([movpair[0], movpair[1], roi_short, str(shuffle)]) + '.h5'
 			savefile = savefile.replace(' ','_')
 			dd.io.save(savefile,savedict)
