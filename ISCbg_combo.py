@@ -21,15 +21,15 @@ for roi in tqdm.tqdm(ROIs):
 	for i in HB['meanISC']['ISCe'].keys():
 		ISC1 = np.mean([HB['meanISC']['ISCs'][i[0]],Sh['meanISC']['ISCs'][i[0]]],0)
 		ISC2 = np.mean([HB['meanISC']['ISCs'][i[1]],Sh['meanISC']['ISCs'][i[1]]],0)
-		savedict['meanISC']['ISCe'][k] = ISC1 - ISC2
+		savedict['meanISC']['ISCe'][i] = ISC1 - ISC2
 	for i in HB['meanISC']['ISCb'].keys():
 		ISCtop = np.mean([HB['meanISC']['ISCs'][i],Sh['meanISC']['ISCs'][i]],0)
 		ISCbot1 = np.mean([HB['meanISC']['ISCs'][(i[0],i[0])], \
 						   Sh['meanISC']['ISCs'][(i[0],i[0])]],0)
 		ISCbot2 = np.mean([HB['meanISC']['ISCs'][(i[1],i[1])], \
 						   Sh['meanISC']['ISCs'][(i[1],i[1])]],0)
-		savedict['meanISC']['ISCe'][k] = ISCtop/(np.sqrt(ISCbot1)*np.sqrt(ISCbot2))
-	dd,io.save(newsavedir+roi,savedict)
+		savedict['meanISC']['ISCe'][i] = ISCtop/(np.sqrt(ISCbot1)*np.sqrt(ISCbot2))
+	dd.io.save(newsavedir+roi,savedict)
 	
 			
 			
