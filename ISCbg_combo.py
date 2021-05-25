@@ -28,7 +28,7 @@ for roi in tqdm.tqdm(ROIs):
 						   Sh['meanISC']['ISCs'][(i[0],i[0])]],0)
 		ISCbot2 = np.mean([HB['meanISC']['ISCs'][(i[1],i[1])], \
 						   Sh['meanISC']['ISCs'][(i[1],i[1])]],0)
-		savedict['meanISC']['ISCe'][i] = ISCtop/(np.sqrt(ISCbot1)*np.sqrt(ISCbot2))
+		savedict['meanISC']['ISCb'][i] = ISCtop/(np.sqrt(ISCbot1)*np.sqrt(ISCbot2))
 	dd.io.save(newsavedir+roi,savedict)
 	
 			
