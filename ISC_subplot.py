@@ -17,12 +17,15 @@ plt.rcParams.update({'font.size': 15})
 
 savedir = ISCdir+'ISCw_ISCb/'
 ROIfs = [f for f in glob.glob(savedir+'*') if any(l in f for l in ['HPC','AMG'])]
+ROIfs2 = [f for f in glob.glob(savedir[:-1]+'_combo/*') if any(l in f for l in ['HPC','AMG'])]
+ROIfs=ROIfs+ROIfs2
 figdir_ = figdir+'subcort_ISC/'
 		
 for r in ROIfs:
 	roif = dd.io.load(r,'/meanISC')
-	movie = r.split('/')[-1].split('_')[0]
-	roi = '_'.join(r.split('/')[-1].split('_')[1:])[:-3]
+	rsplit = r.split('/')[-1].split('_')
+	movie = rsplit[0] if len(rsplit)==3 else ''
+	roi = '_'.join(rsplit[1:])[:-3] if len(rsplit)==3 else '_'.join(rsplit)[:-3]
 	for isc in ['ISCb','ISCe']:
 		xticks = []; ISCs = []; violins = [];
 		for comp in roif[isc].keys():
