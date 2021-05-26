@@ -7,10 +7,8 @@
 
 
 import glob
-import pandas as pd
 import deepdish as dd
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 from settings import *
 plt.rcParams.update({'font.size': 15})
@@ -48,29 +46,36 @@ for r in ROIfs:
 		fig.savefig(figdir_+'_'.join([movie,roi,isc])+'.png', bbox_inches="tight")
 
 
-ISCpat = dd.io.load(ISCdir+'ISCpatw_ISCpatb.h5')
-movpairs = list(ISCpat.keys())
-for roi in ROIs:
-	for isc in ['ISCe','ISCb']:
+savedir = ISCdir+'ISCpatw_ISCpatb/'		
+ROIfs = [r for r in glob.glob(savedir+'*') if any(l in r for l in ['HPC','AMG'])]
+ROIfs = ROIfs[:4]
+
+for r in ROIfs:
+	roif = dd.io.load(r,'/patternISC')
+	rsplit = r.split('/')[-1].split('_')
+	movpair = '_'.join(rsplit[:-2])
+	roi = '_'.join(rsplit[-2:])[:-3]
+	for isc in ['ISCb','ISCe']:
 		fig, ax = plt.subplots(1,3,figsize=(16,5))
 		for event in range(3):
+			xticks = []; ISCs = []; violins = [];
+			for comp in roif[event][isc].keys():
+				xticks.append(comp[0]+' vs '+comp[1] if isc == 'ISCb' else comp[0][0]+' vs '+comp[1][0])
+				ISCs.append(roif[event][isc][comp][0])
+				v = roif[event][isc][comp][1:]
+				violins.append(v[~np.isnan(v)])
+			if isc == 'ISCe': xticks=xticks[:4]; ISCs=ISCs[:4]; violins=violins[:4]
 			y = 0 if isc=='ISCe' else 1
-			ax[event].axhline(y=y, color='gray', linestyle='--',linewidth=3)
-			for movpair in movpairs:
-				xticks = []; ISCs = [];
-				for comp in ISCpat[movpair][roi]['patternISC'][event][isc].keys():
-					xticks.append(comp[0]+' vs '+comp[1] if isc == 'ISCb' else comp[0][0]+' vs '+comp[1][0])
-					ISCs.append(ISCpat[movpair][roi]['patternISC'][event][isc][comp])
-					if isc == 'ISCe': xticks=xticks[:4]; ISCs=ISCs[:4]
-				ax[event].scatter(xticks, ISCs,label=movpair[0]+' - '+movpair[1])
-				if event==0: ax[event].set_ylabel(isc)
-				ax[event].set_title('Event '+str(event))
-		ax[event].legend(bbox_to_anchor=(1, 1.05))
+			ax[event].axhline(y=y, color='gray', linestyle='--',linewidth=2)
+			parts = ax[event].violinplot(violins, np.arange(len(ISCs)), showmeans=False, showmedians=False, showextrema=False)
+			ax[event].scatter(xticks, ISCs,color='k',s=80)
+			if event==0: ax[event].set_ylabel(isc)
+			ax[event].set_title('Event '+str(event))
+			for pc in parts['bodies']:
+				pc.set_facecolor('k')
+			ax[event].set_ylim([-0.08,0.08]) if isc == 'ISCe' else ax[event].set_ylim([-1,2])
 		fig.suptitle(roi, y=1)
-		fig.savefig(figdir_+roi+'_'+isc+'_pat.png', bbox_inches="tight")
-	
-
-
+		fig.savefig(figdir_+'_'.join([movpair,roi,isc])+'_pat.png', bbox_inches="tight")
 
 
 
