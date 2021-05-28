@@ -28,7 +28,7 @@ for sub1 in tqdm.tqdm(subs):
 				v1 = dd.io.load(sub1,'/'+hemi)
 				v2 = dd.io.load(sub2,'/'+hemi)
 				ISCdict[hemi]['pairs'].append(pairstr1)
-				ISCdict[hemi]['ISCs'] = np.append(ISCdict[hemi]['ISCs'], np.zeros((nvox,1)))
+				ISCdict[hemi]['ISCs'] = np.append(ISCdict[hemi]['ISCs'], np.zeros((nvox,1)),axis=1)
 				for v in range(nvox):
 					try:
 						ISCdict[hemi]['ISCs'][v,-1] = pearsonr(v1[v,:],v2[v,:])[0]
