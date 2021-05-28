@@ -22,11 +22,11 @@ Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 data = {'L':dd.io.load(ISCdir+'ISC_vert_L.h5'),'R':dd.io.load(ISCdir+'ISC_vert_R.h5')}
 savedict = {k:{k:{k:{} for k in ['ISCs','ISCe','ISCb']} for k in ['allvISC', 'meanISC', 'patternISC']} for k in ['L','R']}
 for mi,movie in enumerate(movies):
-	for hemi,vals in data:
+	for hemi,vals in data.items():
 		for comp in savedict[hemi].keys():
-			ISCs = {k:np.zeros(nvox,nshuffle) for k in compb}
-			ISCe = {k:np.zeros(nvox,nshuffle) for k in list(combinations([c for c in compb if c[0]==c[1]],2))}
-			ISCb = {k:np.zeros(nvox,nshuffle) for k in [c for c in compb if c[0]!=c[1]]}
+			ISCs = {k:np.zeros((nvox,nshuffle+1)) for k in compb}
+			ISCe = {k:np.zeros((nvox,nshuffle+1)) for k in list(combinations([c for c in compb if c[0]==c[1]],2))}
+			ISCb = {k:np.zeros((nvox,nshuffle+1)) for k in [c for c in compb if c[0]!=c[1]]}
 			for shuffle in tqdm.tqdm(range(nshuffle+1)):
 				ISCsi = {k:0 for k in compb}
 				Phenocopy = Phenodf[Phenodf['MOVIE']==movie]
@@ -37,38 +37,38 @@ for mi,movie in enumerate(movies):
 					idx = np.random.permutation(len(subvec))
 					Phenocopy['GROUP'] = [Phenocopy['GROUP'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['GROUP'])]
 					Phenocopy['Group'] = [Phenocopy['Group'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['Group'])]		
-				for pi,pair in enumerate(data[hemi]['pairs']):
+				for pi,pair in enumerate(vals['pairs']):
 					if pair[4:9]+'_V2' in subvec and pair[17:22]+'_V2' in subvec:
 						idx1 = subvec.index(pair[4:9]+'_V2')
 						idx2 = subvec.index(pair[17:22]+'_V2')
 						if Phenocopy['Group'].iloc[idx1] == 'ECA':
 							if Phenocopy['Group'].iloc[idx2] == 'ECA':
-								ISCs[('ECA', 'ECA')][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+								ISCs[('ECA', 'ECA')][:,shuffle] += vals['ISCs'][:,pi+1]
 								ISCsi[('ECA', 'ECA')] += 1
 								if Phenocopy['GROUP'].iloc[idx1] in comps and \
 								Phenocopy['GROUP'].iloc[idx2] in comps:
 									if Phenocopy['GROUP'].iloc[idx1] != \
 									Phenocopy['GROUP'].iloc[idx2]:
-										ISCs[('DA', 'PI')][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+										ISCs[('DA', 'PI')][:,shuffle] += vals['ISCs'][:,pi+1]
 										ISCsi[('DA', 'PI')] += 1
 									else:
 										ECA1 = Phenocopy['GROUP'].iloc[idx1]
-										ISCs[(ECA1, ECA1)][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+										ISCs[(ECA1, ECA1)][:,shuffle] += vals['ISCs'][:,pi+1]
 										ISCsi[(ECA1, ECA1)] += 1
 							else:
-								ISCs[('C', 'ECA')][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+								ISCs[('C', 'ECA')][:,shuffle] += vals['ISCs'][:,pi+1]
 								ISCsi[('C', 'ECA')] += 1
 								if Phenocopy['GROUP'].iloc[idx1] in comps:
-									ISCs[('C', Phenocopy['GROUP'].iloc[idx1])][:,shuffle]  += data[hemi]['ISCs'][:,pi+1]
+									ISCs[('C', Phenocopy['GROUP'].iloc[idx1])][:,shuffle]  += vals['ISCs'][:,pi+1]
 									ISCsi[('C', Phenocopy['GROUP'].iloc[idx1])] += 1
 						elif Phenocopy['Group'].iloc[idx2] == 'ECA':
-							ISCs[('C', 'ECA')][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+							ISCs[('C', 'ECA')][:,shuffle] += vals['ISCs'][:,pi+1]
 							ISCsi[('C', 'ECA')] += 1
 							if Phenocopy['GROUP'].iloc[idx2] in comps:
-								ISCs[('C', Phenocopy['GROUP'].iloc[idx2])][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+								ISCs[('C', Phenocopy['GROUP'].iloc[idx2])][:,shuffle] += vals['ISCs'][:,pi+1]
 								ISCsi[('C', Phenocopy['GROUP'].iloc[idx2])] += 1
 						else:
-							ISCs[('C', 'C')][:,shuffle] += data[hemi]['ISCs'][:,pi+1]
+							ISCs[('C', 'C')][:,shuffle] += vals['ISCs'][:,pi+1]
 							ISCsi[('C', 'C')] += 1
 				for i,v in ISCs.items():
 					ISCs[i][:,shuffle] = v[:,shuffle] / ISCsi[i]
