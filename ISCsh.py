@@ -42,7 +42,7 @@ for mi,movie in enumerate(movies):
 						for sub in compdict[comp[0]][h]:
 							dall[h].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi))
 						dall[h] = np.mean(np.nanmean(dall[h],0),0)
-					ISCw[comp] = pearsonr(dall[0],dall[1])
+					ISCw[comp[0]] = pearsonr(dall[0],dall[1])[0]
 				else:
 					dall = [[[],[]],[[],[]]]
 					for h1 in [0,1]:
@@ -52,9 +52,9 @@ for mi,movie in enumerate(movies):
 							dall[h1][h2] = np.mean(np.nanmean(dall[h1][h2],0),0)
 					for h1 in [0,1]:
 						for h2 in [0,1]:
-							ISCb_.append(pearsonr(dall[0][h1],dall[1][h2]))
-			savedict[movie][roi]['ISCe'][shuffle] = ISCw[('Control', 'Control')] - ISCw[('ECA', 'ECA')]
-			savedict[movie][roi]['ISCb'][shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw[('Control', 'Control')]) * np.sqrt(ISCw[('ECA', 'ECA')]))
+							ISCb_.append(pearsonr(dall[0][h1],dall[1][h2])[0])
+			savedict[movie][roi]['ISCe'][shuffle] = ISCw['Control'] - ISCw['ECA']
+			savedict[movie][roi]['ISCb'][shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
 			
 dd.io.save(ISCdir+'ISCsh.py',savedict)
 				
