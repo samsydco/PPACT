@@ -40,7 +40,10 @@ for mi,movie in enumerate(movies):
 					dall = [[],[]]
 					for h in [0,1]:
 						for sub in compdict[comp[0]][h]:
-							dall[h].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi))
+							try:
+								dall[h].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi))
+							except:
+								continue
 						dall[h] = np.mean(np.nanmean(dall[h],0),0)
 					ISCw[comp[0]] = pearsonr(dall[0],dall[1])[0]
 				else:
@@ -48,7 +51,10 @@ for mi,movie in enumerate(movies):
 					for h1 in [0,1]:
 						for h2 in [0,1]:
 							for sub in compdict[comp[h1]][h2]:
-								dall[h1][h2].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi))
+								try:
+									dall[h1][h2].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi))
+								except:
+									continue
 							dall[h1][h2] = np.mean(np.nanmean(dall[h1][h2],0),0)
 					for h1 in [0,1]:
 						for h2 in [0,1]:
