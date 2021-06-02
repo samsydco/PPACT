@@ -8,7 +8,7 @@ import pandas as pd
 import deepdish as dd
 import numpy as np
 from scipy.stats import pearsonr
-from itertools import combinations_with_replacement,combinations
+from itertools import combinations_with_replacement
 from settings import *
 
 ROIs = [r.split('/')[-1][:-3] for r in glob.glob(ISCdir+'ISCall/'+'*')]
@@ -62,7 +62,7 @@ for mi,movie in enumerate(movies):
 			savedict[movie][roi]['ISCe'][shuffle] = ISCw['Control'] - ISCw['ECA']
 			savedict[movie][roi]['ISCb'][shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
 			
-dd.io.save(ISCdir+'ISCsh.py',savedict)
+dd.io.save(ISCdir+'ISCsh.h5',savedict)
 				
 				
 
