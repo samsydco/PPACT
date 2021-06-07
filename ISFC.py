@@ -38,8 +38,8 @@ for mi,movie in enumerate(movies):
 					if sub1!=sub2:
 						comp = ID1 if ID1 == ID2 else 'across'
 						for amg in amgrois:
-							roi1 = np.nanmean(dd.io.load(parpath + 'sub-' + sub1[:-3] + '.h5', '/'+roi),0)
 							try:
+								roi1 = np.nanmean(dd.io.load(parpath + 'sub-' + sub1[:-3] + '.h5', '/'+roi),0)
 								roi2 = np.nanmean(dd.io.load(parpath + 'sub-' + sub2[:-3] + '.h5', '/'+amg),0)
 								ISCs[amg][comp].append(pearsonr(roi1,roi2)[0])
 							except:
