@@ -48,7 +48,6 @@ for r in ROIfs:
 
 savedir = ISCdir+'ISCpatw_ISCpatb/'		
 ROIfs = [r for r in glob.glob(savedir+'*') if any(l in r for l in ['HPC','AMG'])]
-ROIfs = ROIfs[:4]
 
 for r in ROIfs:
 	roif = dd.io.load(r,'/patternISC')
