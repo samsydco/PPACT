@@ -32,7 +32,7 @@ for mi,movie in enumerate(movies):
 			Phenocopy['GROUP'] = [Phenocopy['GROUP'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['GROUP'])]
 			Phenocopy['Group'] = [Phenocopy['Group'].iloc[idx[vi]] for vi,val in enumerate(Phenocopy['Group'])]
 		compl = np.min([len(Phenocopy['IDENT_SUBID'][Phenocopy['Group'] == comp]) for comp in comps])//2
-		for s in range(sh):
+		for s in range(nsh):
 			np.random.seed(s)
 			compdict = {}
 			for comp in comps:
@@ -64,7 +64,7 @@ for mi,movie in enumerate(movies):
 								amgl[amg][h] = np.mean(np.nanmean(amgl[amg][h],0),0)
 						ISCw[comp[0]] = pearsonr(dall[0],dall[1])[0]
 						for amg in amgrois:
-							ISFCw[amg][comp[0]] = pearsonr(amgl[amg][0],amgl[amg][1])[0]
+							ISFCw[amg][comp[0]] = pearsonr(amgl[amg][0],dall[1])[0]
 					else:
 						dall = [[[],[]],[[],[]]]
 						amgl = {k:[[[],[]],[[],[]]] for k in amgrois}
@@ -87,7 +87,7 @@ for mi,movie in enumerate(movies):
 							for h2 in [0,1]:
 								ISCb_.append(pearsonr(dall[0][h1],dall[1][h2])[0])
 								for amg in amgrois:
-									ISFCb[amg].append(pearsonr(amgl[amg][0][h1],amgl[amg][1][h2])[0])
+									ISFCb[amg].append(pearsonr(amgl[amg][0][h1],dall[1][h2])[0])
 				savedict[movie][roi]['ISCe'][s,shuffle] = ISCw['Control'] - ISCw['ECA']
 				savedict[movie][roi]['ISCb'][s,shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
 				for amg in amgrois:
