@@ -13,38 +13,29 @@ import matplotlib.pyplot as plt
 from settings import *
 plt.rcParams.update({'font.size': 15})
 
-savedir = ISCdir+'ISCw_ISCb/'
-ROIfs = [f for f in glob.glob(savedir+'*') if any(l in f for l in ['HPC','AMG'])]
-ROIfs2 = [f for f in glob.glob(savedir[:-1]+'_combo/*') if any(l in f for l in ['HPC','AMG'])]
-ROIfs=ROIfs+ROIfs2
+data=dd.io.load(ISCdir+'ISCsh.h5')
+ROIs = [r for r in data[movies[0]].keys() if any(l in r for l in ['HPC','AMG'])]
 figdir_ = figdir+'subcort_ISC/'
-		
-for r in ROIfs:
-	roif = dd.io.load(r,'/meanISC')
-	rsplit = r.split('/')[-1].split('_')
-	movie = rsplit[0] if len(rsplit)==3 else ''
-	roi = '_'.join(rsplit[1:])[:-3] if len(rsplit)==3 else '_'.join(rsplit)[:-3]
-	for isc in ['ISCb','ISCe']:
-		xticks = []; ISCs = []; violins = [];
-		for comp in roif[isc].keys():
-			xticks.append(comp[0]+' vs '+comp[1] if isc == 'ISCb' else comp[0][0]+' vs '+comp[1][0])
-			ISCs.append(roif[isc][comp][0])
-			v = roif[isc][comp][1:]
-			violins.append(v[~np.isnan(v)])
-		if isc == 'ISCe': xticks=xticks[:4]; ISCs=ISCs[:4]; violins=violins[:4]
-		plt.rcParams.update({'font.size': 15})
-		fig,ax = plt.subplots()
-		y = 0 if isc=='ISCe' else 1
-		ax.axhline(y=y, color='gray', linestyle='--',linewidth=2)
-		parts = ax.violinplot(violins, np.arange(len(ISCs)), showmeans=False, showmedians=False, showextrema=False)
-		ax.scatter(xticks, ISCs,color='k',s=80)
-		ax.set_ylabel(isc)
-		ax.set_title(roi+' '+movie)
-		ax.set_ylim([-0.04,0.04]) if isc == 'ISCe' else ax.set_ylim([0,2])
-		for pc in parts['bodies']:
-			pc.set_facecolor('k')
-		fig.savefig(figdir_+'_'.join([movie,roi,isc])+'.png', bbox_inches="tight")
 
+for movie in movies:
+	for roi in ROIs:
+		for isc in ['ISCb','ISCe']:
+			ISC =    np.nanmean(data[movie][roi][isc][:,0])
+			violin = np.nanmean(data[movie][roi][isc][:,1:],0)
+			violin = violin[~np.isnan(violin)]
+			fig,ax = plt.subplots()
+			y = 0 if isc=='ISCe' else 1
+			ax.axhline(y=y, color='gray', linestyle='--',linewidth=2)
+			parts = ax.violinplot(violin, showmeans=False, showmedians=False, showextrema=False)
+			ax.scatter(1,ISC,color='k',s=80)
+			ax.set_xticks([1])
+			ax.set_xticklabels(['C vs ECA'])
+			ax.set_ylabel(isc)
+			ax.set_title(roi+' '+movie)
+			#ax.set_ylim([-0.04,0.04]) if isc == 'ISCe' else ax.set_ylim([0,2])
+			for pc in parts['bodies']:
+				pc.set_facecolor('k')
+			fig.savefig(figdir_+'_'.join([movie,roi,isc])+'_ISCsh.png', bbox_inches="tight")
 
 savedir = ISCdir+'ISCpatw_ISCpatb/'		
 ROIfs = [r for r in glob.glob(savedir+'*') if any(l in r for l in ['HPC','AMG'])]
