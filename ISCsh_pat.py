@@ -28,7 +28,7 @@ moviecomp = list(combinations_with_replacement(movies,2))
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 
-savedict = {k:{k:{k:np.zeros((nsh,3,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs} for k in movies}
+savedict = {k:{k:{k:np.zeros((nsh,3,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs} for k in moviecomp}
 for movpair in moviecomp:
 	Phenocopy1,subvec1 = create_phenocopy(Phenodf,movpair[0])
 	Phenocopy2,subvec2 = create_phenocopy(Phenodf,movpair[1])
@@ -60,10 +60,10 @@ for movpair in moviecomp:
 								for sub in compdict[comp[0]][h]:
 									mi = movies.index(movpair[h])
 									try:
-										dall[h].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi,sel=dd.aslice[int(np.round(Events[mi][event]/TR)):int(np.round(Events[mi][event+1]/TR))]))
+										dall[h].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi,sel=dd.aslice[:,int(np.round(Events[mi][event]/TR)):int(np.round(Events[mi][event+1]/TR))]))
 									except:
 										continue
-								dall[h] = np.mean(np.nanmean(dall[h],0),0)
+								dall[h] = np.mean(np.nanmean(dall[h],0),1)
 							ISCw[comp[0]] = pearsonr(dall[0],dall[1])[0]
 						else:
 							dall = [[[],[]],[[],[]]]
@@ -72,18 +72,18 @@ for movpair in moviecomp:
 									for sub in compdict[comp[h1]][h2]:
 										mi = movies.index(movpair[h2])
 										try:
-											dall[h1][h2].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi,sel=dd.aslice[int(np.round(Events[mi][event]/TR)):int(np.round(Events[mi][event+1]/TR))]))
+											dall[h1][h2].append(dd.io.load(parpath + 'sub-' + sub[:-3] + '.h5', '/'+roi,sel=dd.aslice[:,int(np.round(Events[mi][event]/TR)):int(np.round(Events[mi][event+1]/TR))]))
 										except:
 											continue
-									dall[h1][h2] = np.mean(np.nanmean(dall[h1][h2],0),0)
+									dall[h1][h2] = np.mean(np.nanmean(dall[h1][h2],0),1)
 							if movpair[0] == movpair[1]:
 								for h1 in [0,1]:
 									for h2 in [0,1]:
 										ISCb_.append(pearsonr(dall[0][h1],dall[1][h2])[0])
 							else:
 								ISCb_ = [pearsonr(dall[0][0],dall[1][1])[0], pearsonr(dall[0][1],dall[1][0])[0]]
-					savedict[movie][roi]['ISCe'][s,event,shuffle] = ISCw['Control'] - ISCw['ECA']
-					savedict[movie][roi]['ISCb'][s,event,shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
+					savedict[movpair][roi]['ISCe'][s,event,shuffle] = ISCw['Control'] - ISCw['ECA']
+					savedict[movpair][roi]['ISCb'][s,event,shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
 			
 dd.io.save(ISCdir+'ISCsh_pat.h5',savedict)			
 				
