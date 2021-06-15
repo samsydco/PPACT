@@ -19,8 +19,9 @@ def create_phenocopy(Phenodf,movie):
 	return Phenocopy,subvec
 
 TR = 0.8 # seconds
+nevents = 3
 Events = [[0,25, 138,180],[0,56,125,180]]
-nsh = 5
+nsh = 10
 ROIs = [r.split('/')[-1][:-3] for r in glob.glob(ISCdir+'ISCall/'+'*')]
 comps = ['Control','ECA']
 compb = list(combinations_with_replacement(comps,2))
@@ -28,7 +29,9 @@ moviecomp = list(combinations_with_replacement(movies,2))
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 
-savedict = {k:{k:{k:np.zeros((nsh,3,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs} for k in moviecomp}
+savedict = {k:{k:{k:np.zeros((nsh,nevents,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs} for k in moviecomp}
+ISCw  = {k:{k:{k:np.zeros((nsh,nevents,nshuffle+1)) for k in comps} for k in ROIs} for k in moviecomp}
+ISCb_ = {k:{k:{k:{k:{k:[] for k in range(nshuffle+1)} for k in range(nevents)} for k in range(nsh)} for k in ROIs} for k in moviecomp}
 for movpair in moviecomp:
 	Phenocopy1,subvec1 = create_phenocopy(Phenodf,movpair[0])
 	Phenocopy2,subvec2 = create_phenocopy(Phenodf,movpair[1])
@@ -50,9 +53,7 @@ for movpair in moviecomp:
 				np.random.shuffle(subs2)
 				compdict[comp] = [subs1[:compl],subs2[compl:compl*2]]
 			for roi in ROIs:
-				for event in range(3):
-					ISCw = {}
-					ISCb_ = []
+				for event in range(nevents):
 					for comp in compb:
 						if comp[0] == comp[1]:
 							dall = [[],[]]
@@ -64,7 +65,7 @@ for movpair in moviecomp:
 									except:
 										continue
 								dall[h] = np.mean(np.nanmean(dall[h],0),1)
-							ISCw[comp[0]] = pearsonr(dall[0],dall[1])[0]
+							ISCw[movpair][roi][comp[0]][s,event,shuffle] = pearsonr(dall[0],dall[1])[0]
 						else:
 							dall = [[[],[]],[[],[]]]
 							for h1 in [0,1]:
@@ -79,12 +80,23 @@ for movpair in moviecomp:
 							if movpair[0] == movpair[1]:
 								for h1 in [0,1]:
 									for h2 in [0,1]:
-										ISCb_.append(pearsonr(dall[0][h1],dall[1][h2])[0])
+										ISCb_[movpair][roi][s][event][shuffle].append(pearsonr(dall[0][h1],dall[1][h2])[0])
 							else:
-								ISCb_ = [pearsonr(dall[0][0],dall[1][1])[0], pearsonr(dall[0][1],dall[1][0])[0]]
-					savedict[movpair][roi]['ISCe'][s,event,shuffle] = ISCw['Control'] - ISCw['ECA']
-					savedict[movpair][roi]['ISCb'][s,event,shuffle] = np.mean(ISCb_) / (np.sqrt(ISCw['Control']) * np.sqrt(ISCw['ECA']))
+								ISCb_[movpair][roi][s][event][shuffle] = [pearsonr(dall[0][0],dall[1][1])[0], pearsonr(dall[0][1],dall[1][0])[0]]
+					savedict[movpair][roi]['ISCe'][s,event,shuffle] = ISCw[movpair][roi]['Control'][s,event,shuffle] - ISCw[movpair][roi]['ECA'][s,event,shuffle]
+					savedict[movpair][roi]['ISCb'][s,event,shuffle] = np.mean(ISCb_[movpair][roi][s][event][shuffle]) / (np.sqrt(ISCw[movpair][roi]['Control'][s,event,shuffle]) * np.sqrt(ISCw[movpair][roi]['ECA'][s,event,shuffle]))
+					
+combodict = {k:{k:np.zeros((nsh,nevents,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs}
+for roi in ROIs:
+	for s in range(nsh):
+		for shuffle in range(nshuffle+1):
+			for event in range(nevents):
+				Control = np.mean([ISCw[moviecomp[0]][roi][comp[0]][s,event,shuffle],ISCw[moviecomp[-1]][roi][comp[0]][s,event,shuffle]])
+				ECA = np.mean([ISCw[moviecomp[0]][roi][comp[0]][s,event,shuffle],ISCw[moviecomp[-1]][roi][comp[0]][s,event,shuffle]])
+				ISCb = ISCb_[moviecomp[0]][roi][s][event][shuffle] + ISCb_[moviecomp[-1]][roi][s][event][shuffle]
+				combodict[roi]['ISCe'][s,event,shuffle] = Control - ECA
+				combodict[roi]['ISCb'][s,event,shuffle] = ISCb/(np.sqrt(Control) * np.sqrt(ECA))
 			
-dd.io.save(ISCdir+'ISCsh_pat.h5',savedict)			
+dd.io.save(ISCdir+'ISCsh_pat.h5',{'seperate':savedict,'combo':combodict})			
 				
 
