@@ -19,9 +19,6 @@ compb = list(combinations_with_replacement(comps,2))
 Phenodf = pd.read_csv(phenopath+'Phenodf.csv')
 Phenodf = Phenodf.drop(Phenodf[Phenodf.FDmax.isnull()].index).reset_index()
 
-savedict = {k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs} for k in movies}
-isfc_ISCe = {k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in amgrois} for k in ROIs} for k in movies}
-isfc_ISCb = {k:{k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in amgrois} for k in ROIs} for k in movies}
 ISCw = {k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in comps} for k in ROIs} for k in movies}
 ISCb_ = {k:{k:{k:{k:[] for k in range(nshuffle+1)} for k in range(nsh)} for k in ROIs} for k in movies}
 ISFCw = {k:{k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in comps} for k in amgrois} for k in ROIs} for k in movies}
@@ -90,35 +87,48 @@ for mi,movie in enumerate(movies):
 								for amg in amgrois:
 									ISFCb[movie][roi][amg][s][shuffle]['C_amg_vs_ECA_par']. append(pearsonr(amgl[amg][0][h1], dall[1][h2])[0])
 									ISFCb[movie][roi][amg][s][shuffle]['ECA_amg_vs_C_par']. append(pearsonr(amgl[amg][1][h1], dall[0][h2])[0])
-				savedict[movie][roi]['ISCe'][s,shuffle] = ISCw[movie][roi]['Control'][s,shuffle] - ISCw[movie][roi]['ECA'][s,shuffle]
-				savedict[movie][roi]['ISCb'][s,shuffle] = np.mean(ISCb_[movie][roi][s][shuffle]) / (np.sqrt(ISCw[movie][roi]['Control'][s,shuffle]) * np.sqrt(ISCw[movie][roi]['ECA'][s,shuffle]))
-				for amg in amgrois:
-					isfc_ISCe[movie][roi][amg][s,shuffle] = ISFCw[movie][roi][amg]['Control'][s,shuffle] - ISFCw[movie][roi][amg]['ECA'][s,shuffle]
-					isfc_ISCb[movie][roi][amg]['C_amg_vs_ECA_par'][s,shuffle] = np.mean(ISFCb[movie][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) / (np.sqrt(ISFCw[movie][roi][amg]['Control'][s,shuffle]) * np.sqrt(ISFCw[movie][roi][amg]['ECA'][s,shuffle]))
-					isfc_ISCb[movie][roi][amg]['ECA_amg_vs_C_par'][s,shuffle] = np.mean(ISFCb[movie][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) / (np.sqrt(ISFCw[movie][roi][amg]['Control'][s,shuffle]) * np.sqrt(ISFCw[movie][roi][amg]['ECA'][s,shuffle]))
-		
-combodict = {k:{k:np.zeros((nsh,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs}
-combo_ISFCe = {k:{k:np.zeros((nsh,nshuffle+1)) for k in amgrois} for k in ROIs}
-combo_ISFCb = {k:{k:{k:np.zeros((nsh,nshuffle+1)) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in amgrois} for k in ROIs}
-for roi in ROIs:
-	for s in range(nsh):
-		for shuffle in range(nshuffle+1):
-			Control = np.mean([ISCw['Homeward Bound'][roi]['Control'][s,shuffle], ISCw['Shirley'][roi]['Control'][s,shuffle]],0)
-			ECA     = np.mean([ISCw['Homeward Bound'][roi]['ECA'][s,shuffle], ISCw['Shirley'][roi]['ECA'][s,shuffle]],0)
-			ISCb = ISCb_['Homeward Bound'][roi][s][shuffle] + ISCb_['Shirley'][roi][s][shuffle]
-			combodict[roi]['ISCe'][s,shuffle] = Control - ECA
-			combodict[roi]['ISCb'][s,shuffle] = np.mean(ISCb)/(np.sqrt(Control)*np.sqrt(ECA))
+
+savedict = {k:{k:{k:np.zeros(nshuffle+1) for k in ['ISCe','ISCb']} for k in ROIs} for k in movies}
+isfc_ISCe = {k:{k:{k:np.zeros(nshuffle+1) for k in amgrois} for k in ROIs} for k in movies}
+isfc_ISCb = {k:{k:{k:{k:np.zeros(nshuffle+1) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in amgrois} for k in ROIs} for k in movies}
+for movie in movies:
+	for shuffle in tqdm.tqdm(range(nshuffle+1)):
+		for roi in ROIs:
+			Control = np.mean(ISCw[movie][roi]['Control'][:,shuffle],0)
+			ECA = np.mean(ISCw[movie][roi]['ECA'][:,shuffle],0)
+			savedict[movie][roi]['ISCe'][shuffle] = Control - ECA
+			ISCb = np.mean([np.mean(ISCb_[movie][roi][s][shuffle]) for s in range(nsh)])
+			savedict[movie][roi]['ISCb'][shuffle] = ISCb / (np.sqrt(Control) * np.sqrt(ECA))
 			for amg in amgrois:
-				Control_amg = np.mean([ISFCw['Homeward Bound'][roi][amg]['Control'][s,shuffle], ISFCw['Shirley'][roi][amg]['Control'][s,shuffle]],0)
-				ECA_amg     = np.mean([ISFCw['Homeward Bound'][roi][amg]['ECA'][s,shuffle], ISFCw['Shirley'][roi][amg]['ECA'][s,shuffle]],0)
-				C_amg_vs_ECA_par = ISFCb['Homeward Bound'][roi][amg][s][shuffle]['C_amg_vs_ECA_par'] + ISFCb['Shirley'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']
-				ECA_amg_vs_C_par = ISFCb['Homeward Bound'][roi][amg][s][shuffle]['ECA_amg_vs_C_par'] + ISFCb['Shirley'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']
-				combo_ISFCe[roi][amg][s,shuffle] = Control_amg - ECA_amg
-				combo_ISFCb[roi][amg]['C_amg_vs_ECA_par'][s,shuffle] = np.mean(C_amg_vs_ECA_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
-				combo_ISFCb[roi][amg]['ECA_amg_vs_C_par'][s,shuffle] = np.mean(ECA_amg_vs_C_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
+				Control = np.mean(ISFCw[movie][roi][amg]['Control'][:,shuffle],0)
+				ECA = np.mean(ISFCw[movie][roi][amg]['ECA'][:,shuffle],0)
+				C_amg_vs_ECA_par = np.mean([np.mean(ISFCb[movie][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)])
+				ECA_amg_vs_C_par = np.mean([np.mean(ISFCb[movie][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)])
+				isfc_ISCe[movie][roi][amg][shuffle] = Control - ECA
+				isfc_ISCb[movie][roi][amg]['C_amg_vs_ECA_par'][shuffle] = C_amg_vs_ECA_par / (np.sqrt(Control) * np.sqrt(ECA))
+				isfc_ISCb[movie][roi][amg]['ECA_amg_vs_C_par'][shuffle] = ECA_amg_vs_C_par / (np.sqrt(Control) * np.sqrt(ECA))
+		
+combodict = {k:{k:np.zeros(nshuffle+1) for k in ['ISCe','ISCb']} for k in ROIs}
+combo_ISFCe = {k:{k:np.zeros(nshuffle+1) for k in amgrois} for k in ROIs}
+combo_ISFCb = {k:{k:{k:np.zeros(nshuffle+1) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in amgrois} for k in ROIs}
+for roi in tqdm.tqdm(ROIs):
+	for shuffle in range(nshuffle+1):
+		Control = np.mean(np.concatenate([ISCw['Homeward Bound'][roi]['Control'][:,shuffle], ISCw['Shirley'][roi]['Control'][:,shuffle]]),0)
+		ECA     = np.mean(np.concatenate([ISCw['Homeward Bound'][roi]['ECA'][:,shuffle], ISCw['Shirley'][roi]['ECA'][:,shuffle]]),0)
+		ISCb = [np.mean(ISCb_['Homeward Bound'][roi][s][shuffle]) for s in range(nsh)] + [np.mean(ISCb_['Shirley'][roi][s][shuffle]) for s in range(nsh)]
+		combodict[roi]['ISCe'][s,shuffle] = Control - ECA
+		combodict[roi]['ISCb'][s,shuffle] = np.mean(ISCb)/(np.sqrt(Control)*np.sqrt(ECA))
+		for amg in amgrois:
+			Control_amg = np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['Control'][:,shuffle], ISFCw['Shirley'][roi][amg]['Control'][:,shuffle]]),0)
+			ECA_amg     = np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['ECA'][:,shuffle], ISFCw['Shirley'][roi][amg]['ECA'][:,shuffle]]),0)
+			C_amg_vs_ECA_par = [np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)]
+			ECA_amg_vs_C_par = [np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)]
+			combo_ISFCe[roi][amg][s,shuffle] = Control_amg - ECA_amg
+			combo_ISFCb[roi][amg]['C_amg_vs_ECA_par'][s,shuffle] = np.mean(C_amg_vs_ECA_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
+			combo_ISFCb[roi][amg]['ECA_amg_vs_C_par'][s,shuffle] = np.mean(ECA_amg_vs_C_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
 					
 					
-dd.io.save(ISCdir+'ISCsh.h5',  {'moviedict':savedict, 'combodict':combodict})
-dd.io.save(ISCdir+'ISFCsh.h5', {'ISCe':isfc_ISCe, 'ISCb':isfc_ISCb, 'comboISCe':combo_ISFCe, 'comboISCb':combo_ISFCb})				
+dd.io.save(ISCdir+'ISCsh_avg.h5',  {'moviedict':savedict, 'combodict':combodict})
+dd.io.save(ISCdir+'ISFCsh_avg.h5', {'ISCe':isfc_ISCe, 'ISCb':isfc_ISCb, 'comboISCe':combo_ISFCe, 'comboISCb':combo_ISFCb})				
 				
 
