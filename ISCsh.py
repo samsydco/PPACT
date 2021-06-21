@@ -111,24 +111,33 @@ for movie in movies:
 combodict = {k:{k:np.zeros(nshuffle+1) for k in ['ISCe','ISCb']} for k in ROIs}
 combo_ISFCe = {k:{k:np.zeros(nshuffle+1) for k in amgrois} for k in ROIs}
 combo_ISFCb = {k:{k:{k:np.zeros(nshuffle+1) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in amgrois} for k in ROIs}
+combo2_ISFCe = {k:np.zeros(nshuffle+1) for k in ROIs}
+combo2_ISFCb = {k:{k:np.zeros(nshuffle+1) for k in ['C_amg_vs_ECA_par','ECA_amg_vs_C_par']} for k in ROIs}
 for roi in tqdm.tqdm(ROIs):
 	for shuffle in range(nshuffle+1):
 		Control = np.mean(np.concatenate([ISCw['Homeward Bound'][roi]['Control'][:,shuffle], ISCw['Shirley'][roi]['Control'][:,shuffle]]),0)
 		ECA     = np.mean(np.concatenate([ISCw['Homeward Bound'][roi]['ECA'][:,shuffle], ISCw['Shirley'][roi]['ECA'][:,shuffle]]),0)
 		ISCb = [np.mean(ISCb_['Homeward Bound'][roi][s][shuffle]) for s in range(nsh)] + [np.mean(ISCb_['Shirley'][roi][s][shuffle]) for s in range(nsh)]
-		combodict[roi]['ISCe'][s,shuffle] = Control - ECA
-		combodict[roi]['ISCb'][s,shuffle] = np.mean(ISCb)/(np.sqrt(Control)*np.sqrt(ECA))
-		for amg in amgrois:
-			Control_amg = np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['Control'][:,shuffle], ISFCw['Shirley'][roi][amg]['Control'][:,shuffle]]),0)
-			ECA_amg     = np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['ECA'][:,shuffle], ISFCw['Shirley'][roi][amg]['ECA'][:,shuffle]]),0)
-			C_amg_vs_ECA_par = [np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)]
-			ECA_amg_vs_C_par = [np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)]
-			combo_ISFCe[roi][amg][s,shuffle] = Control_amg - ECA_amg
-			combo_ISFCb[roi][amg]['C_amg_vs_ECA_par'][s,shuffle] = np.mean(C_amg_vs_ECA_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
-			combo_ISFCb[roi][amg]['ECA_amg_vs_C_par'][s,shuffle] = np.mean(ECA_amg_vs_C_par)/(np.sqrt(Control_amg) * np.sqrt(ECA_amg))
+		combodict[roi]['ISCe'][shuffle] = Control - ECA
+		combodict[roi]['ISCb'][shuffle] = np.mean(ISCb)/(np.sqrt(Control)*np.sqrt(ECA))
+		Control_amg = []
+		ECA_amg = []
+		C_amg_vs_ECA_par = []
+		ECA_amg_vs_C_par = []
+		for a,amg in enumerate(amgrois):
+			Control_amg.append(np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['Control'][:,shuffle], ISFCw['Shirley'][roi][amg]['Control'][:,shuffle]]),0))
+			ECA_amg.append(np.mean(np.concatenate([ISFCw['Homeward Bound'][roi][amg]['ECA'][:,shuffle], ISFCw['Shirley'][roi][amg]['ECA'][:,shuffle]]),0))
+			C_amg_vs_ECA_par.append(np.mean([np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['C_amg_vs_ECA_par']) for s in range(nsh)]))
+			ECA_amg_vs_C_par.append(np.mean([np.mean(ISFCb['Homeward Bound'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)] + [np.mean(ISFCb['Shirley'][roi][amg][s][shuffle]['ECA_amg_vs_C_par']) for s in range(nsh)]))
+			combo_ISFCe[roi][amg][shuffle] = Control_amg[a] - ECA_amg[a]
+			combo_ISFCb[roi][amg]['C_amg_vs_ECA_par'][shuffle] = C_amg_vs_ECA_par[a]/(np.sqrt(Control_amg[a]) * np.sqrt(ECA_amg[a]))
+			combo_ISFCb[roi][amg]['ECA_amg_vs_C_par'][shuffle] = ECA_amg_vs_C_par[a]/(np.sqrt(Control_amg[a]) * np.sqrt(ECA_amg[a]))
+		combo2_ISFCe[roi][shuffle] = np.mean(Control_amg) - np.mean(ECA_amg)
+		combo2_ISFCb[roi]['C_amg_vs_ECA_par'][shuffle] = np.mean(C_amg_vs_ECA_par)/(np.sqrt(np.mean(Control_amg)) * np.sqrt(np.mean(ECA_amg)))
+		combo2_ISFCb[roi]['ECA_amg_vs_C_par'][shuffle] = np.mean(ECA_amg_vs_C_par)/(np.sqrt(np.mean(Control_amg)) * np.sqrt(np.mean(ECA_amg)))
 					
 					
 dd.io.save(ISCdir+'ISCsh_avg.h5',  {'moviedict':savedict, 'combodict':combodict})
-dd.io.save(ISCdir+'ISFCsh_avg.h5', {'ISCe':isfc_ISCe, 'ISCb':isfc_ISCb, 'comboISCe':combo_ISFCe, 'comboISCb':combo_ISFCb})				
+dd.io.save(ISCdir+'ISFCsh_avg.h5', {'ISCe':isfc_ISCe, 'ISCb':isfc_ISCb, 'comboISCe':combo_ISFCe, 'comboISCb':combo_ISFCb, 'combo2ISCe':combo2_ISFCe, 'combo2ISCb':combo2_ISFCb})				
 				
 
