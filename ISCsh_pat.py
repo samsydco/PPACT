@@ -84,11 +84,12 @@ for movpair in moviecomp:
 							else:
 								ISCb_[movpair][roi][s][event][shuffle] = [pearsonr(dall[0][0],dall[1][1])[0], pearsonr(dall[0][1],dall[1][0])[0]]
 		for roi in ROIs:
-			Control = np.mean(ISCw[movpair][roi]['Control'][:,event,shuffle],0)
-			ECA = np.mean(ISCw[movpair][roi]['ECA'][:,event,shuffle],0)
-			ISCb = [ISCb_[movpair][roi][s][event][shuffle] for s in range(nsh)]
-			savedict[movpair][roi]['ISCe'][event,shuffle] = Control - ECA
-			savedict[movpair][roi]['ISCb'][event,shuffle] = np.mean(ISCb) / (np.sqrt(Control) * np.sqrt(ECA))
+			for event in range(nevents):
+				Control = np.mean(ISCw[movpair][roi]['Control'][:,event,shuffle],0)
+				ECA = np.mean(ISCw[movpair][roi]['ECA'][:,event,shuffle],0)
+				ISCb = [ISCb_[movpair][roi][s][event][shuffle] for s in range(nsh)]
+				savedict[movpair][roi]['ISCe'][event,shuffle] = Control - ECA
+				savedict[movpair][roi]['ISCb'][event,shuffle] = np.mean(ISCb) / (np.sqrt(Control) * np.sqrt(ECA))
 
 dd.io.save(ISCdir+'ISCsh_pat_avg.h5',savedict)	
 combodict = {k:{k:np.zeros((nevents,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs}
