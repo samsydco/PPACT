@@ -91,17 +91,17 @@ for movpair in moviecomp:
 				savedict[movpair][roi]['ISCe'][event,shuffle] = Control - ECA
 				savedict[movpair][roi]['ISCb'][event,shuffle] = np.mean(ISCb) / (np.sqrt(Control) * np.sqrt(ECA))
 
-dd.io.save(ISCdir+'ISCsh_pat_avg.h5',savedict)	
+dd.io.save(ISCdir+'ISCsh_pat_avg.h5',{'seperate':savedict,'ISCw':ISCw,'ISCb_':ISCb})	
 combodict = {k:{k:np.zeros((nevents,nshuffle+1)) for k in ['ISCe','ISCb']} for k in ROIs}
 for roi in ROIs:
 	for shuffle in range(nshuffle+1):
 		for event in range(nevents):
-			Control = np.mean(np.concatenate([ISCw[moviecomp[0]][roi][comp[0]][:,event,shuffle],ISCw[moviecomp[-1]][roi][comp[0]][:,event,shuffle]]))
-			ECA = np.mean(np.concatenate([ISCw[moviecomp[0]][roi][comp[0]][:,event,shuffle],ISCw[moviecomp[-1]][roi][comp[0]][:,event,shuffle]]))
+			Control = np.mean(np.concatenate([ISCw[moviecomp[0]][roi]['Control'][:,event,shuffle],ISCw[moviecomp[-1]][roi]['Control'][:,event,shuffle]]))
+			ECA = np.mean(np.concatenate([ISCw[moviecomp[0]][roi]['ECA'][:,event,shuffle],ISCw[moviecomp[-1]][roi]['ECA'][:,event,shuffle]]))
 			ISCb = [ISCb_[moviecomp[0]][roi][s][event][shuffle] for s in range(nsh)] + [ISCb_[moviecomp[-1]][roi][s][event][shuffle] for s in range(nsh)]
 			combodict[roi]['ISCe'][event,shuffle] = Control - ECA
 			combodict[roi]['ISCb'][event,shuffle] = np.mean(ISCb)/(np.sqrt(Control) * np.sqrt(ECA))
 			
-dd.io.save(ISCdir+'ISCsh_pat_avg.h5',{'seperate':savedict,'combo':combodict})			
+dd.io.save(ISCdir+'ISCsh_pat_avg.h5',{'seperate':savedict,'combo':combodict,'ISCw':ISCw,'ISCb_':ISCb})			
 				
 
