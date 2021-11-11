@@ -15,8 +15,11 @@ fwlist = sp.check_output(fwls+[fwpath]).splitlines()
 fwlist = [x.decode("utf-8") for x in fwlist]
 fwlist = [s[1:] for s in fwlist if 'PA' in s and len(s)==6]
 
-# If anything prints, new subject with functional run has been added
-for sub in tqdm.tqdm(fwlist):#list(set(fwlist).difference(subs)):
+new_subs = [283,282,251,250,249,248,263,119,204,135,307,296,168]
+new_subs = [251, 250, 263, 204, 296]
+newsubs = ['PA'+str(s) for s in new_subs]
+
+for sub in tqdm.tqdm(newsubs):
 	out = sp.run(fwget+[sub+'_V2W2'])
 	print(sub,out)
 
