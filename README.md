@@ -20,6 +20,7 @@ ISCmat.py - put pairwise ISC (in parcels) values from ISC.py into matrix accordi
 
 ISCbg_vert.py - pairwise ISC both within and between groups in vertex-space
 ISCsh.py - split half ISC both within- and between-groups in parcel-space (also in subcortical areas)
+ISCbg.py - pairwise between group ISC
 ISCbg_combo.py - combines both movies when calculating between-group ISC and ISC group differences. - in parcel-space     
 
 ISCpat.py - pairwise pattern ISC in 3 movie events
@@ -28,9 +29,7 @@ Honestly not sure difference between these two:
 ISCpat_comp.py   
 ISCpat_comp_eff.py
    
-ISFC.py
-
-ISCbg.py  
+ISFC.py - pairwise ISFC with amygdala
 ISC_subplot.py - plots ISCs for subcortical ROIs 
                      
-settings.py
+settings.py - sets various file paths and variables
