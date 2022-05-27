@@ -13,10 +13,11 @@ fwget = [path+'fw','export','bids',datapath,'--project','PACCT_study_w2','--sess
 
 fwlist = sp.check_output(fwls+[fwpath]).splitlines()
 fwlist = [x.decode("utf-8") for x in fwlist]
-fwlist = [s[1:] for s in fwlist if 'PA' in s and len(s)==6]
+fwlist = [s[5:] for s in fwlist if 'PA' in s]
 
-new_subs = [283,282,251,250,249,248,263,119,204,135,307,296,168]
-new_subs = [251, 250, 263, 204, 296]
+new_subs = []
+#new_subs = [283,282,251,250,249,248,263,119,204,135,307,296,168]
+#new_subs = [251, 250, 263, 204, 296]
 newsubs = ['PA'+str(s) for s in new_subs]
 
 for sub in tqdm.tqdm(newsubs):
