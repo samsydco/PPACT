@@ -15,15 +15,15 @@ prob_s = {}
 done_sub = []
 for sub  in glob.glob(datapath+'/sub*'):
 	sub_ = sub.split('/')[-1]
-	if (len(glob.glob(fmripreppath+sub_+'/ses-V2W2/func/sub*fs*'))==0 and
-		   len(glob.glob(sub+'/ses-V2W2/anat/*T1*'))>0 and
-		   len(glob.glob(sub+'/ses-V2W2/func/*MOVIE*'))>0):
+	if (len(glob.glob(fmripreppath+sub_+'/*/func/sub*fs*'))==0 and
+		   len(glob.glob(sub+'/*/anat/*T1*'))>0 and
+		   len(glob.glob(sub+'/*/func/*MOVIE*'))>0):
 		plist.append(sub_)
-	elif (len(glob.glob(sub+'/ses-V2W2/anat/*T1*'))==0 or
-		   len(glob.glob(sub+'/ses-V2W2/func/*MOVIE*'))==0):
-		prob_s[sub]={'anat':glob.glob(sub+'/ses-V2W2/anat/*T1*'),
-					 'movie':glob.glob(sub+'/ses-V2W2/func/*MOVIE*')}
-	elif len(glob.glob(fmripreppath+sub_+'/ses-V2W2/func/sub*fs*'))>0:
+	elif (len(glob.glob(sub+'/*/anat/*T1*'))==0 or
+		   len(glob.glob(sub+'/*/func/*MOVIE*'))==0):
+		prob_s[sub]={'anat':glob.glob(sub+'/*/anat/*T1*'),
+					 'movie':glob.glob(sub+'/*/func/*MOVIE*')}
+	elif len(glob.glob(fmripreppath+sub_+'/*/func/sub*fs*'))>0:
 		done_sub.append(sub_)
 plist = plist[:75]
 nchunk = 4 # number of items per chunk (maybe use 10?)
