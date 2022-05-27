@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 import h5py
+from sklearn import linear_model
 from scipy import stats
 from settings import *
 
@@ -20,7 +21,7 @@ for sub in subs:
     print('Processing subject ', sub)
     Demo = {'Age': Phenodf['age_truncated'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0],
            'Sex': Phenodf['DEM_3_GENDER_CHILD'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0]}
-    with h5py.File(os.path.join(prepath + sub + '.h5')) as hf:
+    with h5py.File(os.path.join(prepath + sub + '.h5'),'a') as hf:
         grp = hf.create_group('Pheno')
         for k,v in Demo.items():
             grp.create_dataset(k,data=v)
@@ -58,7 +59,7 @@ for sub in subs:
         D[hem] = D[hem] - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
         # Note 8% of values on cortical surface are NaNs, and the following will therefore throw an error
         D[hem] = stats.zscore(D[hem], axis=1)
-    with h5py.File(os.path.join(prepath + sub + '.h5')) as hf:
+    with h5py.File(os.path.join(prepath + sub + '.h5'),'a') as hf:
         hf.create_dataset('L', data=D['L'])
         hf.create_dataset('R', data=D['R'])
         hf.create_dataset('reg',data=reg)
