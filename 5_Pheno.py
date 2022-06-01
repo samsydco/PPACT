@@ -42,19 +42,39 @@ sns.scatterplot(x="SS_NEW_TOTAL_MEAN.J", y="CGH_AGE_ADOPT",
                 data=new_pheno_df, ax=ax)
 ax.set_xlabel('Child\'s felt attachment security')
 ax.set_ylabel('Age of adoption (months)')
-plt.savefig(phenofigdir+'Attachment_vs_adoption')
+plt.savefig(phenofigdir+'Attachment_vs_adoption.png')
 
-
-sns.stripplot(x="cgh_switch_groups", y='CGH_SUM_SWITCH', data=new_pheno_df, jitter=True)
+f, ax = plt.subplots()
+sns.stripplot(x="cgh_switch_groups", y='CGH_SUM_SWITCH', data=new_pheno_df, jitter=True,ax=ax)
+ax.set_xlabel('Binned number of caregiver switches')
+ax.set_ylabel('Actual number of caregiver switches')
+plt.savefig(phenofigdir+'Caregiver_switches.png')
 
 f, ax = plt.subplots(figsize=(6.5, 6.5))
 sns.scatterplot(x="CGH_AGE_ADOPT", y="cgh_switch_groups",
                 data=new_pheno_df, ax=ax)
+ax.set_xlabel('Age of adoption (months)')
+ax.set_ylabel('Binned number of caregiver switches')
+plt.tight_layout()
+plt.savefig(phenofigdir+'Adoption_age_vs_caregiver_switches.png',bbox_inches = "tight")
 
+tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group'})
 sns.set_theme(style="darkgrid", font_scale=2)
-sns.displot(
-    new_pheno_df, x="SS_NEW_TOTAL_MEAN.J", col="GROUP_x"
-)
+sns.displot(tempdf, x='Felt attachment security', col="ECA Group")
+plt.savefig(phenofigdir+'Attachment_vs_ECA_group.png')
+
+sns.set_theme(font_scale=1)
+tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group','GENDER_CHILD':'Gender','CGH_SUM_SWITCH':'Number of Switches','CGH_AGE_ADOPT':'Adoption Age','SS_NEW_AVAILABILITY_MEAN':'Parent Availability','SS_NEW_RELYSTRESS_MEAN':'Stress reliance','SS_NEW_COMMUNICATION_MEAN':'Communication subscale','cgh_switch_groups':'Binned switches','CGH_AGE_LIVE':'Age living with parents'})
+tempdf = tempdf.drop(['shirley1_no0','ID','comps0_creas1','GROUP_y','ECA Group','MOVIE','DEM_3_GENDER_CHILD','age_rounded_to_years','CGH_SUM_EARLYAGE','CGH_SUM_LATEAGE','age_truncated'], 1)
+tempdf = tempdf.dropna()
+tempdf = tempdf.astype(float)
+f, ax = plt.subplots()
+corr = tempdf.corr()
+hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
+                 linewidths=.05,annot_kws={"fontsize":8})
+f.subplots_adjust(top=0.93)
+t= f.suptitle('Correlation Heatmap', fontsize=14)
+plt.savefig(phenofigdir+'ECA_heatmap.png',bbox_inches = "tight")
 
 
 new_pheno_df.to_csv('temp.csv', index=False)
