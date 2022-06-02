@@ -16,8 +16,8 @@ fwlist = [x.decode("utf-8") for x in fwlist]
 fwlist = [s[5:] for s in fwlist if 'PA' in s]
 
 new_subs = []
-#new_subs = [283,282,251,250,249,248,263,119,204,135,307,296,168]
-#new_subs = [251, 250, 263, 204, 296]
+prob_subs = [268, 311]
+#new_subs = [105, 147, 217, 218, 219, 251, 261, 263, 278, 292, 293, 296, 297, 304, 307, 317, 320, 335]
 newsubs = ['PA'+str(s) for s in new_subs]
 
 for sub in tqdm.tqdm(newsubs):
