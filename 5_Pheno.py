@@ -38,6 +38,11 @@ tempdf = tempdf[~tempdf['ID'].isin(noschema)]
 noadoptdf = tempdf[tempdf['CGH_AGE_LIVE'].isna()]
 noadoptdf = noadoptdf[~noadoptdf['GROUP_x'].isin(['C'])]
 noadoptlist = np.array(noadoptdf['ID'])
+# Missing phenotypic data for some subjects:
+missingsubs = []
+for sub in subs:
+	if len(new_pheno_df[new_pheno_df['ID']==sub])==0:
+		missingsubs.append(sub)
 
 # Filling in some missing data with zeros for control subjects
 for c in ['CGH_AGE_LIVE', 'CGH_AGE_ADOPT', 'CGH_SUM_EARLYAGE', 'CGH_SUM_LATEAGE']:
@@ -98,7 +103,7 @@ t= f.suptitle('Correlation Heatmap', fontsize=14)
 plt.savefig(phenofigdir+'ECA_heatmap_all.png',bbox_inches = "tight")
 
 
-new_pheno_df.to_csv('temp.csv', index=False)
+#new_pheno_df.to_csv('temp.csv', index=False)
 
 
 import seaborn as sns
