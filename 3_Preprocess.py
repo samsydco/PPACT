@@ -30,7 +30,9 @@ for sub in subs:
         print('No demographic information available for: ',sub)
     D = dict()
     for hem in ['L', 'R']:
-        fname = os.path.join(fmripreppath + sub + '/ses-V2W2/func/' + sub + '_ses-V2W2_task-MOVIE_run-1_space-fsaverage6_hemi-' + hem + '_bold.func.gii')
+        # Need to change path to from ses-V2W2 to ses-V1W2 for some subjects!!
+        fdir = 'ses-V2W2' if os.path.isdir(fmripreppath + sub + '/ses-V2W2/') else 'ses-V1W2'
+        fname = os.path.join(fmripreppath + sub + '/' + fdir + '/func/' + sub + '_'+ fdir +'_task-MOVIE_run-1_space-fsaverage6_hemi-' + hem + '_bold.func.gii')
         if not os.path.isfile(fname): fname = fname.replace('_run-1','')
         print('      Loading ', fname)
         gi = nib.load(fname)
@@ -44,7 +46,7 @@ for sub in subs:
     # -X, Y, Z and derivatives
     # -RotX, RotY, RotZ and derivatives
     
-    fname = os.path.join(fmripreppath + sub + '/ses-V2W2/func/' + sub + '_ses-V2W2_task-MOVIE_run-1_desc-confounds_timeseries.tsv')
+    fname = os.path.join(fmripreppath + sub + '/' + fdir + '/func/' + sub + '_' + fdir + '_task-MOVIE_run-1_desc-confounds_timeseries.tsv')
     if not os.path.isfile(fname): fname = fname.replace('_run-1','')
     conf = np.genfromtxt(fname, names=True)
     motion = np.column_stack((conf['trans_x'],\
