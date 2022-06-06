@@ -28,6 +28,7 @@ for sub in subs:
     D = dict()
     for hem in ['L', 'R']:
         fname = os.path.join(fmripreppath + sub + '/ses-V2W2/func/' + sub + '_ses-V2W2_task-MOVIE_run-1_space-fsaverage6_hemi-' + hem + '_bold.func.gii')
+		if not os.path.isfile(fname): fname = fname.replace('_run-1','')
         print('      Loading ', fname)
         gi = nib.load(fname)
         D[hem] = np.column_stack([gi.darrays[t].data for t in range(len(gi.darrays))])
