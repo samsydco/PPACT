@@ -19,12 +19,15 @@ Phenodf = pd.read_csv(phenopath+'schema_inventory.csv')
 
 for sub in subs:
     print('Processing subject ', sub)
-    Demo = {'Age': Phenodf['age_truncated'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0],
-           'Sex': Phenodf['DEM_3_GENDER_CHILD'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0]}
-    with h5py.File(os.path.join(prepath + sub + '.h5'),'a') as hf:
-        grp = hf.create_group('Pheno')
-        for k,v in Demo.items():
-            grp.create_dataset(k,data=v)
+    try:
+        Demo = {'Age': Phenodf['age_truncated'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0],
+               'Sex': Phenodf['DEM_3_GENDER_CHILD'][Phenodf['IDENT_SUBID'] == sub[4:]+'_V2'].iloc[0]}
+        with h5py.File(os.path.join(prepath + sub + '.h5'),'a') as hf:
+            grp = hf.create_group('Pheno')
+            for k,v in Demo.items():
+                grp.create_dataset(k,data=v)
+    except:
+        print('No demographic information available for: ',sub)
     D = dict()
     for hem in ['L', 'R']:
         fname = os.path.join(fmripreppath + sub + '/ses-V2W2/func/' + sub + '_ses-V2W2_task-MOVIE_run-1_space-fsaverage6_hemi-' + hem + '_bold.func.gii')
