@@ -25,24 +25,37 @@ new_pheno_df = new_pheno_df.replace(' ', np.nan)
 new_pheno_df = new_pheno_df.apply(pd.to_numeric, errors='coerce').fillna(new_pheno_df)
 
 # MISSING DATA!
+# Create Missing data CSV for Nim and Lisa
 # subjects whose adversity characterization differs between dataframes!
 nanGROUP = list(new_pheno_df['ID'][new_pheno_df['GROUP_x'].isna()])
+missingdf = new_pheno_df[new_pheno_df['GROUP_x'].isna()]
 tempdf = new_pheno_df[~new_pheno_df['ID'].isin(nanGROUP)]
 prob_subs = tempdf.loc[~(tempdf['GROUP_x'] == tempdf['GROUP_y'])]
+prob_subs['GROUP_x'] = np.nan
+missingdf = missingdf.append(prob_subs, ignore_index=True)
 # ages do not match between dataframes!
-age_diff = np.array(df2['age_truncated']) - np.array(df2['age_rounded_to_years'])
+age_diff = np.array(new_pheno_df['age_truncated']) - np.array(new_pheno_df['age_rounded_to_years'])
 #subjects missing schema score:
 noschema = list(tempdf['ID'][tempdf['SS_NEW_TOTAL_MEAN.J'].isna()])
+missingdf = missingdf.append(tempdf[tempdf['SS_NEW_TOTAL_MEAN.J'].isna()], ignore_index=True)
 tempdf = tempdf[~tempdf['ID'].isin(noschema)]
 # no adoption age
 noadoptdf = tempdf[tempdf['CGH_AGE_LIVE'].isna()]
 noadoptdf = noadoptdf[~noadoptdf['GROUP_x'].isin(['C'])]
+missingdf = missingdf.append(noadoptdf, ignore_index=True)
 noadoptlist = np.array(noadoptdf['ID'])
 # Missing phenotypic data for some subjects:
 missingsubs = []
 for sub in subs:
 	if len(new_pheno_df[new_pheno_df['ID']==sub])==0:
 		missingsubs.append(sub)
+new_index = pd.RangeIndex(len(missingsubs))
+new_df = pd.DataFrame(np.nan, index=new_index, columns=missingdf.columns)
+new_df['ID'] = np.resize(missingsubs,len(new_df))
+missingdf = missingdf.append(new_df,ignore_index=True)
+
+missingdf.to_csv('missingdata.csv', index=False)
+
 
 # Filling in some missing data with zeros for control subjects
 for c in ['CGH_AGE_LIVE', 'CGH_AGE_ADOPT', 'CGH_SUM_EARLYAGE', 'CGH_SUM_LATEAGE']:
