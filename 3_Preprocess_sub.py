@@ -17,9 +17,9 @@ if len(subs_temp)>0:
 	print('New subjects need to be run. Will re-run preprocessing on all',\
 		 ' subjects to find intersection of subcortial roi')
 
-mask_path = '_ses-V2W2_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
-dpath = '_ses-V2W2_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
-conf_path = '_ses-V2W2_task-MOVIE_run-1_desc-confounds_timeseries.tsv'
+mask_path = '_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
+dpath = '_task-MOVIE_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
+conf_path = '_task-MOVIE_run-1_desc-confounds_timeseries.tsv'
 ROIs = {'L_HPC':[17],'R_HPC':[53],'L_AMG':[18],'R_AMG':[54]} # From: https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
 
 # Find intersection of ROIs across participants
@@ -29,8 +29,8 @@ for roi,idx in ROIs.items():
 	for sub in subs:
 		fdir[sub] = 'ses-V2W2' if os.path.isdir(fmripreppath + sub + '/ses-V2W2/') else 'ses-V1W2'
 		fpath = fmripreppath+sub+'/'+fdir[sub]+'/func/'+sub
-		fname = fpath + mask_path
-		if sub == 'sub-PA003': fname = fpath+mask_path[:20]+'_acq-2'+mask_path[20:]
+		fname = fpath + '_' + fdir[sub] + mask_path
+		if sub == 'sub-PA003': fname = fpath+ '_' + fdir[sub] + mask_path[:11] + '_acq-2' + mask_path[11:]
 		if not os.path.isfile(fname): fname = fname.replace('_run-1','')
 		submask = nib.load(fname)
 		submask = submask.get_fdata() == idx[0]
@@ -41,8 +41,8 @@ for roi,idx in ROIs.items():
 
 for sub in tqdm.tqdm(subs):
 	fpath = fmripreppath+sub+'/'+fdir[sub]+'/func/'+sub
-	fname = fpath + dpath
-	if sub == 'sub-PA003': fname = fpath+dpath[:20]+'_acq-2'+dpath[20:]
+	fname = fpath + '_' + fdir[sub] + dpath
+	if sub == 'sub-PA003': fname = fpath + '_' + fdir[sub] + dpath[:11] + '_acq-2' + dpath[11:]
 	if not os.path.isfile(fname): fname = fname.replace('_run-1','')
 	nii = nib.load(fname).get_fdata()
 	if nii.shape[2]==81:
@@ -59,7 +59,7 @@ for sub in tqdm.tqdm(subs):
 			# -X, Y, Z and derivatives
 			# -RotX, RotY, RotZ and derivatives
 		
-			conf = np.genfromtxt(fpath+conf_path, names=True)
+			conf = np.genfromtxt(fpath + '_' + fdir[sub] + conf_path, names=True)
 			motion = np.column_stack((conf['trans_x'],
 									  conf['trans_y'],
 									  conf['trans_z'],
