@@ -24,7 +24,7 @@ ROIs = {'L_HPC':[17],'R_HPC':[53],'L_AMG':[18],'R_AMG':[54]} # From: https://sur
 
 # Find intersection of ROIs across participants
 fdir = {k:[] for k in subs}
-for roi,idx in ROIs.items():
+for roi,idx in tqdm.tqdm(ROIs.items()):
 	mask = np.ones((81,96,81),dtype=bool)
 	for sub in subs:
 		fdir[sub] = 'ses-V2W2' if os.path.isdir(fmripreppath + sub + '/ses-V2W2/') else 'ses-V1W2'
@@ -58,8 +58,10 @@ for sub in tqdm.tqdm(subs):
 			# -All cosine bases for drift (0.008 Hz = 125s)
 			# -X, Y, Z and derivatives
 			# -RotX, RotY, RotZ and derivatives
-		
-			conf = np.genfromtxt(fpath + '_' + fdir[sub] + conf_path, names=True)
+			
+			fname = os.path.join(fpath + '_' + fdir[sub] + conf_path)
+			if not os.path.isfile(fname): fname = fname.replace('_run-1','')
+			conf = np.genfromtxt(fname, names=True)
 			motion = np.column_stack((conf['trans_x'],
 									  conf['trans_y'],
 									  conf['trans_z'],
