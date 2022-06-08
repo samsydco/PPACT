@@ -7,6 +7,7 @@ import glob
 import tqdm
 import pandas as pd
 import numpy as np
+import deepdish as dd
 from settings import *
 
 phenofigdir = figdir+'pheno/'
@@ -54,7 +55,18 @@ new_df = pd.DataFrame(np.nan, index=new_index, columns=missingdf.columns)
 new_df['ID'] = np.resize(missingsubs,len(new_df))
 missingdf = missingdf.append(new_df,ignore_index=True)
 
-missingdf.to_csv('missingdata.csv', index=False)
+missingdf.to_csv(phenopath+'missingdata.csv', index=False)
+
+# How many timepoints are censored?
+motion_outliers = {}
+nTR = {}
+for sub in tqdm.tqdm(new_pheno_df['ID']):
+	fdir = 'ses-V2W2' if os.path.isdir(fmripreppath + 'sub-' + sub + '/ses-V2W2/') else 'ses-V1W2'
+	fname = os.path.join(fmripreppath + 'sub-' + sub + '/' + fdir + '/func/' + 'sub-' + sub + '_' + fdir + '_task-MOVIE_run-1_desc-confounds_timeseries.tsv')
+	if not os.path.isfile(fname): fname = fname.replace('_run-1','')
+	conf = np.genfromtxt(fname, names=True)
+	motion_outliers[sub] = len([k for k in conf.dtype.names if 'motion_outlier' in k])
+new_pheno_df['motion_outliers'] = new_pheno_df['ID'].map(motion_outliers)
 
 
 # Filling in some missing data with zeros for control subjects
@@ -81,6 +93,16 @@ ax.set_xlabel('Child\'s felt attachment security')
 ax.set_ylabel('Age of adoption (months)')
 plt.savefig(phenofigdir+'Attachment_vs_adoption.png')
 
+f, ax = plt.subplots(figsize=(6.5, 6.5))
+sns.despine(f, left=True, bottom=True)
+sns.scatterplot(x='motion_outliers', y="SS_NEW_TOTAL_MEAN.J", 
+                hue="cgh_switch_groups",#palette="ch:r=-.2,d=.3_r",
+				linewidth=0,
+                data=new_pheno_df, ax=ax)
+ax.set_xlabel('Motion outliers')
+ax.set_ylabel('Child\'s felt attachment security')
+plt.savefig(phenofigdir+'Motion_vs_Attachment.png')
+
 f, ax = plt.subplots()
 sns.stripplot(x="cgh_switch_groups", y='CGH_SUM_SWITCH', data=new_pheno_df, jitter=True,ax=ax)
 ax.set_xlabel('Binned number of caregiver switches')
@@ -95,12 +117,22 @@ ax.set_ylabel('Binned number of caregiver switches')
 plt.tight_layout()
 plt.savefig(phenofigdir+'Adoption_age_vs_caregiver_switches.png',bbox_inches = "tight")
 
+f, ax = plt.subplots(figsize=(6.5, 6.5))
+sns.scatterplot(x="CGH_AGE_ADOPT", y="motion_outliers",
+                data=new_pheno_df, ax=ax)
+ax.set_xlabel('Age of adoption (months)')
+ax.set_ylabel('Motion Outliers')
+plt.tight_layout()
+plt.savefig(phenofigdir+'Motion_vs_Adoption_age.png',bbox_inches = "tight")
+
 tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group'})
 sns.set_theme(style="darkgrid", font_scale=2)
 sns.displot(tempdf, x='Felt attachment security', col="Group")
 plt.savefig(phenofigdir+'Attachment_vs_ECA_group_2.png')
 sns.displot(tempdf, x='Felt attachment security', col="ECA Group")
 plt.savefig(phenofigdir+'Attachment_vs_ECA_group_1.png')
+tempdf['motion_outliers'] = tempdf['motion_outliers']/225
+sns.displot(tempdf, x='motion_outliers',col='Group')
 
 sns.set_theme(font_scale=1)
 tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group','GENDER_CHILD':'Gender','CGH_SUM_SWITCH':'Number of Switches','CGH_AGE_ADOPT':'Adoption Age','SS_NEW_AVAILABILITY_MEAN':'Parent Availability','SS_NEW_RELYSTRESS_MEAN':'Stress reliance','SS_NEW_COMMUNICATION_MEAN':'Communication subscale','cgh_switch_groups':'Binned switches','CGH_AGE_LIVE':'Age living with parents'})
