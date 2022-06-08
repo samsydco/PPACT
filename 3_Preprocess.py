@@ -57,7 +57,7 @@ for sub in subs:
 							  conf['rot_z']))
     reg = np.column_stack((conf['csf'],conf['white_matter'],\
 		  np.nan_to_num(conf['framewise_displacement']),\
-		  np.column_stack([conf[k] for k in conf.dtype.names if 'cosine' in k]),\
+		  np.column_stack([conf[k] for k in conf.dtype.names if ('cosine' in k) or ('motion_outlier' in k)]),\
 		  motion,\
 		  np.vstack((np.zeros((1, motion.shape[1])), np.diff(motion, axis=0)))))
     print('      Cleaning and zscoring')
