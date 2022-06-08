@@ -101,7 +101,7 @@ sns.scatterplot(x='motion_outliers', y="SS_NEW_TOTAL_MEAN.J",
                 data=new_pheno_df, ax=ax)
 ax.set_xlabel('Motion outliers')
 ax.set_ylabel('Child\'s felt attachment security')
-plt.savefig(phenofigdir+'Motion_vs_Attachment.png')
+plt.savefig(phenofigdir+'Motion_vs_Attachment.png',bbox_inches = "tight")
 
 f, ax = plt.subplots()
 sns.stripplot(x="cgh_switch_groups", y='CGH_SUM_SWITCH', data=new_pheno_df, jitter=True,ax=ax)
@@ -131,8 +131,18 @@ sns.displot(tempdf, x='Felt attachment security', col="Group")
 plt.savefig(phenofigdir+'Attachment_vs_ECA_group_2.png')
 sns.displot(tempdf, x='Felt attachment security', col="ECA Group")
 plt.savefig(phenofigdir+'Attachment_vs_ECA_group_1.png')
-tempdf['motion_outliers'] = tempdf['motion_outliers']/225
 sns.displot(tempdf, x='motion_outliers',col='Group')
+plt.savefig(phenofigdir+'Motion_vs_ECA_group_2.png')
+sns.displot(tempdf, x='motion_outliers', col="ECA Group")
+plt.savefig(phenofigdir+'Motion_vs_ECA_group_1.png')
+thresh = 0.2*225 #45 TRs is 20% of all TRs
+tempdf2 = tempdf[tempdf['motion_outliers']<thresh]
+sns.displot(tempdf2, x='motion_outliers',col='Group')
+plt.savefig(phenofigdir+'Motion_vs_ECA_group_thresh_2.png')
+sns.displot(tempdf2, x='motion_outliers', col="ECA Group")
+plt.savefig(phenofigdir+'Motion_vs_ECA_group_thresh_1.png')
+ndrop = tempdf[tempdf['motion_outliers']>thresh]
+ECAdrop = len(ndrop[ndrop['Group']=='ECA'])
 
 sns.set_theme(font_scale=1)
 tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group','GENDER_CHILD':'Gender','CGH_SUM_SWITCH':'Number of Switches','CGH_AGE_ADOPT':'Adoption Age','SS_NEW_AVAILABILITY_MEAN':'Parent Availability','SS_NEW_RELYSTRESS_MEAN':'Stress reliance','SS_NEW_COMMUNICATION_MEAN':'Communication subscale','cgh_switch_groups':'Binned switches','CGH_AGE_LIVE':'Age living with parents'})
@@ -146,6 +156,15 @@ hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
 f.subplots_adjust(top=0.93)
 t= f.suptitle('Correlation Heatmap', fontsize=14)
 plt.savefig(phenofigdir+'ECA_heatmap_all.png',bbox_inches = "tight")
+
+tempdf = tempdf[tempdf['motion_outliers']<thresh]
+f, ax = plt.subplots()
+corr = tempdf.corr()
+hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
+                 linewidths=.05,annot_kws={"fontsize":8})
+f.subplots_adjust(top=0.93)
+t= f.suptitle('Correlation Heatmap', fontsize=14)
+plt.savefig(phenofigdir+'ECA_heatmap_all_thresh.png',bbox_inches = "tight")
 
 
 #new_pheno_df.to_csv('temp.csv', index=False)
