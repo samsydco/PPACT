@@ -83,6 +83,7 @@ ax.set_ylabel('Number of caregiver switches')
 plt.tight_layout()
 plt.savefig(phenofigdir+'Adoption_age_vs_caregiver_switches.png',bbox_inches = "tight")
 
+sns.set_theme(style="darkgrid", font_scale=2)
 f, ax = plt.subplots(figsize=(6.5, 6.5))
 sns.scatterplot(x="W1_CGH_AGE_ADOPT", y="motion_outliers",
                 data=new_pheno_df, ax=ax)
