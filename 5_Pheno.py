@@ -8,11 +8,13 @@ import tqdm
 import pandas as pd
 import numpy as np
 import deepdish as dd
+from scipy.stats import ttest_ind
 from settings import *
 
 phenofigdir = figdir+'pheno/'
 
-new_pheno_df = pd.read_csv(phenopath+'SHIRLEY_adversityVARS_for_Sam_analysis.csv')
+#new_pheno_df = pd.read_csv(phenopath+'SHIRLEY_adversityVARS_for_Sam_analysis.csv')
+new_pheno_df = pd.read_csv(phenopath+'sam_all.csv')
 
 subs = [sub.split('/')[-1][4:-5] for sub in glob.glob(fmripreppath + '*.html')]
 
@@ -143,6 +145,7 @@ sns.displot(tempdf2, x='motion_outliers', col="ECA Group")
 plt.savefig(phenofigdir+'Motion_vs_ECA_group_thresh_1.png')
 ndrop = tempdf[tempdf['motion_outliers']>thresh]
 ECAdrop = len(ndrop[ndrop['Group']=='ECA'])
+ttest = ttest_ind(tempdf['motion_outliers'][tempdf['Group']=='Control'], tempdf['motion_outliers'][tempdf['Group']=='ECA'])
 
 sns.set_theme(font_scale=1)
 tempdf = new_pheno_df.rename(columns={'SS_NEW_TOTAL_MEAN.J': 'Felt attachment security', 'GROUP_x': 'ECA Group','GENDER_CHILD':'Gender','CGH_SUM_SWITCH':'Number of Switches','CGH_AGE_ADOPT':'Adoption Age','SS_NEW_AVAILABILITY_MEAN':'Parent Availability','SS_NEW_RELYSTRESS_MEAN':'Stress reliance','SS_NEW_COMMUNICATION_MEAN':'Communication subscale','cgh_switch_groups':'Binned switches','CGH_AGE_LIVE':'Age living with parents'})
