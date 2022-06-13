@@ -16,7 +16,7 @@ fwlist = [x.decode("utf-8") for x in fwlist]
 fwlist = [s[5:] for s in fwlist if 'PA' in s]
 
 new_subs = []
-prob_subs = [268, 311]
+prob_subs = [311]
 #new_subs = [105, 147, 217, 218, 219, 251, 261, 263, 278, 292, 293, 296, 297, 304, 307, 317, 320, 335]
 newsubs = ['PA'+str(s) for s in new_subs]
 
